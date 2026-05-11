@@ -36,7 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     `${user.scuolaId}/${params.id}/${Date.now()}-${file.name}`,
     file,
     {
-      access: "private", // Private per GDPR
+      access: "public", // Private per GDPR
       addRandomSuffix: false,
     }
   );
