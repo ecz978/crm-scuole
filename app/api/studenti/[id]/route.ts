@@ -1,6 +1,6 @@
 // app/api/studenti/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 
