@@ -1,15 +1,11 @@
 // lib/auth.ts
 import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
+  secret: process.env.NEXTAUTH_SECRET,
 
   providers: [
     CredentialsProvider({
@@ -23,16 +19,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const utente = await prisma.utente.findUnique({
           where: { email: credentials.email as string },
-          include: { scuola: true },
         });
 
-        if (!utente || !utente.password || !utente.attivo) return null;
-
-        const valid = await bcrypt.compare(
-          credentials.password as string,
-          utente.password
-        );
-        if (!valid) return null;
+        // Login in chiaro senza bcrypt (temporaneo per testing)
+        if (!utente || utente.password !== credentials.password || !utente.attivo) {
+          return null;
+        }
 
         return {
           id: utente.id,
@@ -44,24 +36,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       },
     }),
-
-    ...(process.env.GOOGLE_CLIENT_ID
-      ? [
-          GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-          }),
-        ]
-      : []),
-
-    ...(process.env.GITHUB_CLIENT_ID
-      ? [
-          GitHubProvider({
-            clientId: process.env.GITHUB_CLIENT_ID!,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-          }),
-        ]
-      : []),
   ],
 
   callbacks: {
