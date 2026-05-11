@@ -304,7 +304,7 @@ function SezioneIscrizione({ studente: s, set }: any) {
         <CB s={s} k="convittore" set={set} label="Convittore" />
         <CB s={s} k="obligoFormativo" set={set} label="Obbligo formativo" />
       </div>
-      <Field label="Note" style={{ gridColumn: "1 / -1" }}>
+      <Field label="Note" >
         <textarea className="input" value={s?.note || ""} onChange={e => set("note", e.target.value)} rows={3} style={{ resize: "vertical" }} />
       </Field>
     </div>
