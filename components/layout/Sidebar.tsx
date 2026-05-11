@@ -1,12 +1,8 @@
 "use client";
-// components/layout/Sidebar.tsx
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
-import {
-  Users, Home, Upload, Settings, LogOut,
-  FileText, GraduationCap, Building2, Shield
-} from "lucide-react";
+import { useUser, SignOutButton } from "@clerk/nextjs";
+import { Users, Home, Upload, Settings, LogOut, FileText, GraduationCap, Building2, Shield } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
@@ -24,37 +20,26 @@ const adminItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
-  const user = session?.user as any;
-  const isDirigente = user?.ruolo === "DIRIGENTE";
+  const { user } = useUser();
+  const isDirigente = user?.publicMetadata?.ruolo === "DIRIGENTE";
 
   return (
     <div className="sidebar">
       <div className="sidebar-logo">
         CRM<span>/scuole</span>
       </div>
-
       <nav className="sidebar-nav">
         {navItems.map(({ href, icon: Icon, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`nav-item ${pathname.startsWith(href) ? "active" : ""}`}
-          >
+          <Link key={href} href={href} className={`nav-item ${pathname.startsWith(href) ? "active" : ""}`}>
             <Icon size={15} />
             {label}
           </Link>
         ))}
-
         {isDirigente && (
           <>
             <div className="nav-section">Amministrazione</div>
             {adminItems.map(({ href, icon: Icon, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`nav-item ${pathname.startsWith(href) ? "active" : ""}`}
-              >
+              <Link key={href} href={href} className={`nav-item ${pathname.startsWith(href) ? "active" : ""}`}>
                 <Icon size={15} />
                 {label}
               </Link>
@@ -62,26 +47,19 @@ export default function Sidebar() {
           </>
         )}
       </nav>
-
-      {/* User info + logout */}
-      <div style={{
-        padding: "12px 18px",
-        borderTop: "1px solid rgba(255,255,255,0.1)",
-      }}>
+      <div style={{ padding: "12px 18px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 2 }}>
-          {user?.ruolo}
+          {user?.publicMetadata?.ruolo as string || "USER"}
         </div>
         <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginBottom: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {user?.email}
+          {user?.primaryEmailAddress?.emailAddress}
         </div>
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="nav-item"
-          style={{ padding: "6px 0", fontSize: 12, color: "rgba(255,255,255,0.5)" }}
-        >
-          <LogOut size={14} />
-          Esci
-        </button>
+        <SignOutButton>
+          <button className="nav-item" style={{ padding: "6px 0", fontSize: 12, color: "rgba(255,255,255,0.5)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
+            <LogOut size={14} />
+            Esci
+          </button>
+        </SignOutButton>
       </div>
     </div>
   );

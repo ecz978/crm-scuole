@@ -1,8 +1,8 @@
 "use client";
 // app/import/page.tsx
 import { useState, useRef } from "react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import Sidebar from "@/components/layout/Sidebar";
 import * as XLSX from "xlsx";
 import { Upload, ArrowRight, CheckCircle, AlertCircle, Save } from "lucide-react";
@@ -141,7 +141,7 @@ function autoMatch(colonna: string): string {
 }
 
 export default function ImportPage() {
-  const { data: session, status } = useSession();
+const { user, isLoaded } = useUser();
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [file, setFile] = useState<File | null>(null);
@@ -154,11 +154,11 @@ export default function ImportPage() {
   const [templateName, setTemplateName] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  if (status === "loading") return null;
-  if (!session) { router.push("/login"); return null; }
+  if (!isLoaded) return null;
+if (!user) { router.push("/login"); return null; }
 
-  const user = session.user as any;
-  if (!["DIRIGENTE", "VICEPRESIDE"].includes(user.ruolo)) {
+const userRole = user.publicMetadata?.ruolo as string;
+if (!["DIRIGENTE", "VICEPRESIDE"].includes(userRole)) {
     return <div style={{ padding: 40 }}>Accesso non autorizzato.</div>;
   }
 

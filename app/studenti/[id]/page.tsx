@@ -1,8 +1,8 @@
 "use client";
+import { useUser } from "@clerk/nextjs";
 // app/studenti/[id]/page.tsx
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import Sidebar from "@/components/layout/Sidebar";
 import {
   ArrowLeft, Save, Paperclip, Users, AlertCircle,
@@ -27,7 +27,7 @@ const SEZIONI = [
 export default function StudentePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { isLoaded } = useUser();
   const [studente, setStudente] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -494,3 +494,4 @@ function SezioneDocumenti({ studenteId }: { studenteId: string }) {
     </div>
   );
 }
+
