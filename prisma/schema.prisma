@@ -1,0 +1,561 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+// ─────────────────────────────────────────────
+// MULTI-TENANT: Scuola
+// ─────────────────────────────────────────────
+
+model Scuola {
+  id               String   @id @default(cuid())
+  nome             String
+  codiceMeccanog   String?
+  codiceFiscale    String?
+  sedi             String[] // array di nomi sedi
+  percorsi         String[] // array di nomi percorsi
+  annoScolastico   String   @default("2024/25")
+  piano            Piano    @default(MEDIA)
+  stato            StatoScuola @default(ATTIVA)
+  dataAttivazione  DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  utenti     Utente[]
+  studenti   Studente[]
+  genitori   Genitore[]
+  classi     Classe[]
+  mappingTemplates MappingTemplate[]
+  importHistory    ImportHistory[]
+  auditLog         AuditLog[]
+
+  @@map("scuole")
+}
+
+enum Piano {
+  PICCOLA
+  MEDIA
+  GRANDE
+}
+
+enum StatoScuola {
+  ATTIVA
+  SOSPESA
+  ELIMINATA
+}
+
+// ─────────────────────────────────────────────
+// UTENTI (auth)
+// ─────────────────────────────────────────────
+
+model Utente {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String?  // null se SSO
+  nome      String
+  cognome   String
+  ruolo     Ruolo    @default(SEGRETERIA)
+  sede      String?  // null se dirigente/vicepreside
+  attivo    Boolean  @default(true)
+  scuolaId  String
+  scuola    Scuola   @relation(fields: [scuolaId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+
+  @@map("utenti")
+}
+
+enum Ruolo {
+  DIRIGENTE
+  VICEPRESIDE
+  SEGRETERIA
+}
+
+// next-auth tables
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  utente            Utente  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  utente       Utente   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─────────────────────────────────────────────
+// STUDENTE
+// ─────────────────────────────────────────────
+
+model Studente {
+  id        String   @id @default(cuid())
+  scuolaId  String
+  scuola    Scuola   @relation(fields: [scuolaId], references: [id])
+
+  // ANAGRAFE
+  cognome              String
+  nome                 String
+  cognomeAlias         String?
+  nomeAlias            String?
+  dataNascita          DateTime?
+  sesso                String?
+  sessoAlias           String?
+  luogoNascita         String?
+  provinciaNascita     String?
+  statoNascita         String?
+  statoNascitaCod      String?
+  comuneNascitaCod     String?
+  cittadinanza1        String?
+  cittadinanza2        String?
+  codFiscale           String?
+  codiceSidi           String?
+  matricola            String?
+
+  // CONTATTI
+  email                String?
+  email2               String?
+  pec                  String?
+  skype                String?
+  telefono             String?
+  cellulare            String?
+
+  // RESIDENZA
+  comuneResidenza      String?
+  comuneResidenzaCod   String?
+  provinciaResidenza   String?
+  indirizzoResidenza   String?
+  frazioneResidenza    String?
+  capResidenza         String?
+  codiceCatastale      String?
+
+  // RECAPITO
+  comuneRecapito       String?
+  provinciaRecapito    String?
+  indirizzoRecapito    String?
+  frazioneRecapito     String?
+  capRecapito          String?
+
+  // ISCRIZIONE
+  annoCorso            String?
+  annoSigla            String?
+  sezione              String?
+  classe               String?
+  percorso             String?
+  sede                 String?
+  indirizzoStudi       String?
+  classificazioneMin   String?
+  indirizzoMin         String?
+  dataInizio           DateTime?
+  dataFine             DateTime?
+  annoScolastico       String?
+  oreSettimanali       Int?
+  convittore           Boolean?
+  posizione            String?
+  religioneCattolica   Boolean?
+  attivitaAlternativa  Boolean?
+
+  // PROVENIENZA
+  scuolaProvenienza    String?
+  scuolaProvMecc       String?
+  denominazioneIst     String?
+  indirizzoScuolaMedia String?
+  indirizzoIstProv     String?
+  scuolaPrimaria       String?
+  codMeccPrimaria      String?
+  valutazionePrimaria  String?
+  scuolaSecondaria     String?
+  codMeccSecondaria    String?
+  valutazioneSecondaria String?
+  ultimaAnnualita      String?
+  ultimoAnnoScol       String?
+  esitoProvenienza     String?
+  annoConsequimentoMedia String?
+
+  // QUALIFICA
+  annoScolasticoQualifica String?
+  esitoQualifica          String?
+  punteggioAmm            Float?
+  punteggioFin            Float?
+  descrizioneQualifica    String?
+  numeroQualifica         String?
+
+  // CREDITI
+  credito3             Float?
+  credito4             Float?
+  credito5             Float?
+  creditoIntegrativo   Float?
+  credito3Form         Float?
+  credito4Form         Float?
+  credito5Form         Float?
+  credito3Scol         Float?
+  credito4Scol         Float?
+  credito5Scol         Float?
+
+  // ESAMI
+  diplomaEsameStato    String?
+  punteggioEsame       Float?
+  lodeEsame            Boolean?
+  dataEsame            DateTime?
+  numeroDiploma        String?
+  giudizioAmm          String?
+  mediaVoti            Float?
+
+  // STUDI
+  lingua1              String?
+  lingua2              String?
+  lingua3              String?
+  linguaScelta1        String?
+  linguaScelta2        String?
+  linguaScelta3        String?
+  linguaScelta4        String?
+  strumento1           String?
+  strumento2           String?
+  strumento3           String?
+  tempoScuola          String?
+  indirizzo            String?
+  pianoStudio          String?
+  fornitoDi            String?
+
+  // DISABILITÀ
+  dsa                  Boolean? @default(false)
+  dsaDescrizione       String?
+  disabilita           Boolean? @default(false)
+  gravitaHandicap      String?
+  icd10                String?
+  des                  Boolean? @default(false)
+  bes                  Boolean? @default(false)
+  enteCertificatore    String?
+  dataCertificazione   DateTime?
+
+  // DIRITTI
+  migrante             Boolean? @default(false)
+  affidato             Boolean? @default(false)
+  estremiProvvedimento String?
+  senzaDimora          Boolean? @default(false)
+  alloggioInsicuro     Boolean? @default(false)
+  abitazioneInadeguata Boolean? @default(false)
+  famDisoccupata       Boolean? @default(false)
+  famDisoccupataFigli  Boolean? @default(false)
+  genitoreSolo         Boolean? @default(false)
+  genitoreSoloLav      Boolean? @default(false)
+  nessunaDelePrecedenti Boolean? @default(false)
+
+  // DOCUMENTO IDENTITÀ
+  tipoDocumento        String?
+  numeroDocumento      String?
+  dataScadenzaDoc      DateTime?
+  enteDocumento        String?
+  sidi                 Boolean? @default(false)
+
+  // SALUTE
+  vaccinazione         String?
+  autoSomministrazione Boolean? @default(false)
+  educazioneFisica     String?
+  esoneroEFInizio      DateTime?
+  esoneroEFFine        DateTime?
+
+  // VARIE
+  mezzoTrasporto1      String?
+  mezzoTrasporto2      String?
+  gruppoNomade         Boolean? @default(false)
+  dataArrivoItalia     DateTime?
+  ingressoPrima6       Boolean? @default(false)
+  primoASItalia        Boolean? @default(false)
+  annoArrivoItalia     String?
+  fratelliMinori       Boolean? @default(false)
+  obligoFormativo      Boolean? @default(false)
+  dataObligoFormativo  DateTime?
+  esitoFinale          String?
+  esitoSospeso         Boolean? @default(false)
+  scuolaTrasferimento  String?
+  statoAlunno          String?
+  numDocumenti         Int?
+  anniFrequenzaInfanzia Int?
+  entrataMattinoMin    Int?
+  entrataPomMin        Int?
+  uscitaMattinoMin     Int?
+  uscitaPomMin         Int?
+  numeroIscriz         Int?
+  primoASInItalia      String?
+  note                 String? @db.Text
+  noteAlunno           String? @db.Text
+
+  // CAMPI CUSTOM (Spaggiari)
+  campo1Anagrafe       String?
+  campo2Anagrafe       String?
+  campo3Anagrafe       String?
+  campo4Anagrafe       String?
+  campo5Anagrafe       String?
+  campo6Anagrafe       String?
+  campo7Anagrafe       String?
+  campo8Anagrafe       String?
+  campoAgg1            String?
+  campoAgg2            String?
+  campoAgg3            String?
+  campoAgg4            String?
+  campoAgg5            String?
+  campoAgg6            String?
+  campoAgg7            String?
+  campoAgg8            String?
+
+  // CAMPI EXTRA CALAM
+  campiCustom          Json?   @default("{}")
+
+  // METADATA
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?
+  updatedBy            String?
+
+  genitori   GenitoreStudente[]
+  deleghe    Delega[]
+  documenti  Documento[]
+  classeRel  Classe?  @relation(fields: [classeId], references: [id])
+  classeId   String?
+
+  @@unique([scuolaId, codFiscale])
+  @@index([scuolaId])
+  @@index([scuolaId, classe])
+  @@index([scuolaId, sede])
+  @@map("studenti")
+}
+
+// ─────────────────────────────────────────────
+// GENITORE
+// ─────────────────────────────────────────────
+
+model Genitore {
+  id        String   @id @default(cuid())
+  scuolaId  String
+  scuola    Scuola   @relation(fields: [scuolaId], references: [id])
+
+  // ANAGRAFE
+  cognome              String
+  nome                 String
+  dataNascita          DateTime?
+  sesso                String?
+  luogoNascita         String?
+  codiceCatastaleNasc  String?
+  provinciaNascita     String?
+  statoNascita         String?
+  statoNascitaCod      String?
+  cittadinanza1        String?
+  cittadinanza1Cod     String?
+  cittadinanza2        String?
+  cittadinanza2Cod     String?
+  codFiscale           String?
+
+  // CONTATTI
+  email1               String?
+  email2               String?
+  pec                  String?
+  telefono             String?
+  cellulare            String?
+
+  // RECAPITO
+  comuneRecapito       String?
+  indirizzoRecapito    String?
+  frazioneRecapito     String?
+  capRecapito          String?
+  provinciaRecapito    String?
+
+  // FISCALE
+  iban                 String?
+
+  // RELAZIONE
+  vivente              Boolean? @default(true)
+  responsabilitaGen    Boolean? @default(true)
+  statoCivile          String?
+  titoloStudio         String?
+  professione          String?
+
+  // PRIVACY
+  autorizzazioneTratt  Boolean? @default(false)
+  pattoCorrespons      Boolean? @default(false)
+  pagoInRete           Boolean? @default(false)
+  pagoInReteRappr      Boolean? @default(false)
+
+  // METADATA
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?
+
+  studenti   GenitoreStudente[]
+
+  @@unique([scuolaId, codFiscale])
+  @@index([scuolaId])
+  @@map("genitori")
+}
+
+// Relazione Many-to-Many Genitore <-> Studente
+model GenitoreStudente {
+  id          String   @id @default(cuid())
+  genitorId   String
+  studenteId  String
+  parentela   String   // Padre, Madre, Tutore, Affidatario, Altro
+  principale  Boolean  @default(false)
+
+  genitore    Genitore  @relation(fields: [genitorId], references: [id], onDelete: Cascade)
+  studente    Studente  @relation(fields: [studenteId], references: [id], onDelete: Cascade)
+
+  @@unique([genitorId, studenteId])
+  @@map("genitore_studente")
+}
+
+// ─────────────────────────────────────────────
+// DELEGA (persone delegate, max 10)
+// ─────────────────────────────────────────────
+
+model Delega {
+  id          String   @id @default(cuid())
+  studenteId  String
+  studente    Studente @relation(fields: [studenteId], references: [id], onDelete: Cascade)
+  cognome     String
+  nome        String
+  email       String?
+  telefono    String?
+  parentela   String?
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@index([studenteId])
+  @@map("deleghe")
+}
+
+// ─────────────────────────────────────────────
+// DOCUMENTO (upload PDF/JPG/DOC)
+// ─────────────────────────────────────────────
+
+model Documento {
+  id          String   @id @default(cuid())
+  studenteId  String
+  studente    Studente @relation(fields: [studenteId], references: [id], onDelete: Cascade)
+  nome        String
+  tipo        String   // PDF, JPG, DOC
+  blobUrl     String   // Vercel Blob URL
+  size        Int?
+  createdAt   DateTime @default(now())
+  createdBy   String?
+
+  @@index([studenteId])
+  @@map("documenti")
+}
+
+// ─────────────────────────────────────────────
+// CLASSE
+// ─────────────────────────────────────────────
+
+model Classe {
+  id        String   @id @default(cuid())
+  scuolaId  String
+  scuola    Scuola   @relation(fields: [scuolaId], references: [id])
+  nome      String
+  sede      String
+  anno      String
+  percorso  String
+  createdAt DateTime @default(now())
+
+  studenti  Studente[]
+
+  @@index([scuolaId])
+  @@map("classi")
+}
+
+// ─────────────────────────────────────────────
+// IMPORT MAPPING TEMPLATE
+// ─────────────────────────────────────────────
+
+model MappingTemplate {
+  id          String   @id @default(cuid())
+  scuolaId    String
+  scuola      Scuola   @relation(fields: [scuolaId], references: [id])
+  nome        String
+  descrizione String?
+  mapping     Json     // { "Cognome Spaggiari": "cognome", ... }
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  @@index([scuolaId])
+  @@map("mapping_templates")
+}
+
+// ─────────────────────────────────────────────
+// IMPORT HISTORY
+// ─────────────────────────────────────────────
+
+model ImportHistory {
+  id               String   @id @default(cuid())
+  scuolaId         String
+  scuola           Scuola   @relation(fields: [scuolaId], references: [id])
+  nomeFile         String
+  totaleRighe      Int
+  importatiOk      Int
+  importatiFalliti Int
+  errori           Json?
+  createdAt        DateTime @default(now())
+  createdBy        String?
+
+  @@index([scuolaId])
+  @@map("import_history")
+}
+
+// ─────────────────────────────────────────────
+// AUDIT LOG (immutabile)
+// ─────────────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  scuolaId    String
+  scuola      Scuola   @relation(fields: [scuolaId], references: [id])
+  userId      String
+  userEmail   String
+  azione      String   // CREATE, READ, UPDATE, DELETE
+  collezione  String   // studenti, genitori, classi, ...
+  documentoId String?
+  dettagli    Json?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([scuolaId])
+  @@index([scuolaId, createdAt])
+  @@map("audit_log")
+}
