@@ -1,10 +1,9 @@
 "use client";
 // app/dashboard/page.tsx
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
-import { Users, Upload, Search, Plus, ChevronRight, AlertCircle } from "lucide-react";
+import { Users, Upload, Search, Plus, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 interface Studente {
@@ -29,7 +28,6 @@ interface Stats {
 }
 
 export default function Dashboard() {
-  const { data: session, status } = useSession();
   const router = useRouter();
   const [studenti, setStudenti] = useState<Studente[]>([]);
   const [total, setTotal] = useState(0);
@@ -41,13 +39,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") router.push("/login");
-  }, [status, router]);
-
-  useEffect(() => {
-    if (status !== "authenticated") return;
     fetchStudenti();
-  }, [q, sede, percorso, page, status]);
+  }, [q, sede, percorso, page]);
 
   const fetchStudenti = async () => {
     setLoading(true);
@@ -59,11 +52,6 @@ export default function Dashboard() {
     setPages(data.pages || 1);
     setLoading(false);
   };
-
-  if (status === "loading") return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>Caricamento...</div>;
-  if (!session) return null;
-
-  const user = session.user as any;
 
   return (
     <div className="layout">
