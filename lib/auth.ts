@@ -85,26 +85,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 
   pages: {
-  signIn: "/login",
-  error: "/login",
-},
-callbacks: {
-  async jwt({ token, user }) {
-    if (user) {
-      token.ruolo = (user as any).ruolo;
-      token.sede = (user as any).sede;
-      token.scuolaId = (user as any).scuolaId;
-    }
-    return token;
+    signIn: "/login",
+    error: "/login",
   },
-  async session({ session, token }) {
-    if (session.user) {
-      (session.user as any).id = token.sub;
-      (session.user as any).ruolo = token.ruolo;
-      (session.user as any).sede = token.sede;
-      (session.user as any).scuolaId = token.scuolaId;
-    }
-    return session;
-  },
-},
 });
