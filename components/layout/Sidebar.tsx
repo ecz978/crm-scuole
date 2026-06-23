@@ -2,13 +2,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser, SignOutButton } from "@clerk/nextjs";
-import { Users, Home, Upload, Settings, LogOut, FileText, GraduationCap, Building2, Shield } from "lucide-react";
+import { Users, Home, Upload, Settings, LogOut, FileText, GraduationCap, Building2, Shield, Puzzle } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
   { href: "/studenti", icon: Users, label: "Studenti" },
   { href: "/import", icon: Upload, label: "Import Spaggiari" },
   { href: "/documenti", icon: FileText, label: "Documenti" },
+  { href: "/giochi", icon: Puzzle, label: "Giochi" },
 ];
 
 const adminItems = [

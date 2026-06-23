@@ -329,6 +329,11 @@ tbody tr:last-child td { border-bottom: none; }
   .main { margin-left: 0; }
 }
 
+/* ─── Giochi ── */
+.hex-btn:active {
+  transform: scale(0.92);
+}
+
 /* ─── Paginator ── */
 .pagination {
   display: flex;
