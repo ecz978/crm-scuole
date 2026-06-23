@@ -1,5 +1,6 @@
 const CACHE_NAME = "parole-cache-v1";
-const PRECACHE_URLS = ["/", "/soluzioni", "/manifest.json"];
+const BASE_PATH = "/crm-scuole";
+const PRECACHE_URLS = [`${BASE_PATH}/`, `${BASE_PATH}/soluzioni/`, `${BASE_PATH}/manifest.json`];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
