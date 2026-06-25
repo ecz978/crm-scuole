@@ -127,6 +127,14 @@ button { font-family: inherit; }
   text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.01em;
   color: var(--text-muted); margin-bottom: 18px; text-transform: capitalize;
 }
+.day-nav {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 12px; margin-bottom: 18px;
+}
+.day-nav .btn { flex-shrink: 0; }
+.day-nav-center { text-align: center; line-height: 1.25; flex: 1; min-width: 0; }
+.day-nav-title { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+.day-nav-sub { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: capitalize; }
 
 /* ---------- Level / score panel ---------- */
 .level-panel {
@@ -341,7 +349,20 @@ button { font-family: inherit; }
   </header>
 
   <main class="page">
-    <div class="date-line" id="date-line"></div>
+    <div class="card day-nav">
+      <button class="btn btn-ghost btn-sm" id="day-prev">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Prima
+      </button>
+      <div class="day-nav-center">
+        <div class="day-nav-title" id="day-title">Oggi</div>
+        <div class="day-nav-sub" id="day-sub"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="day-next">
+        Dopo
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
 
     <button class="level-panel" id="score-btn">
       <div class="level-top">
@@ -498,19 +519,33 @@ function todayKey(date) {
 function startOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 
 /* ---------- State ---------- */
-const now = new Date();
-const puzzle = getPuzzleForDate(now);
-const letters = puzzleLetters(puzzle);
-const maxScore = maxScoreForPuzzle(puzzle);
-const storageKey = "parole-game-" + todayKey(now) + "-" + puzzle.day;
+// Si può giocare la sfida di oggi e quelle dei giorni passati (archivio),
+// tornando indietro fino a coprire tutti i giochi distinti. Ogni giorno ha
+// punteggio e parole trovate salvati separatamente.
+const todayDate = startOfDay(new Date());
+const oldestPlayable = (() => { const d = new Date(todayDate); d.setDate(d.getDate() - (TOTAL_DAYS - 1)); return d; })();
 
-let outer = [...puzzle.outer];
+let playDate, puzzle, letters, maxScore, storageKey, outer;
 let input = "";
 let found = [];
 let messageTimer = null;
 let modalOpen = false;
 
-try { const raw = localStorage.getItem(storageKey); if (raw) found = JSON.parse(raw); } catch (e) {}
+function loadDay(date) {
+  playDate = startOfDay(date);
+  if (playDate.getTime() > todayDate.getTime()) playDate = new Date(todayDate);
+  if (playDate.getTime() < oldestPlayable.getTime()) playDate = new Date(oldestPlayable);
+  puzzle = getPuzzleForDate(playDate);
+  letters = puzzleLetters(puzzle);
+  maxScore = maxScoreForPuzzle(puzzle);
+  storageKey = "parole-game-" + todayKey(playDate) + "-" + puzzle.day;
+  outer = [...puzzle.outer];
+  input = "";
+  found = [];
+  try { const raw = localStorage.getItem(storageKey); if (raw) found = JSON.parse(raw); } catch (e) {}
+  buildHexBoard();
+  renderAll();
+}
 function saveFound() { localStorage.setItem(storageKey, JSON.stringify(found)); }
 function computeScore() { return found.reduce((s, w) => s + scoreForWord(w), 0); }
 
@@ -561,7 +596,8 @@ function renderStatus() {
   const banner = $("win-banner");
   if (isMax) {
     banner.classList.remove("hidden");
-    $("win-sub").textContent = found.length + " parole trovate · " + score + " punti. Torna domani per un nuovo gioco.";
+    $("win-sub").textContent = found.length + " parole trovate · " + score + " punti." +
+      (playDate.getTime() === todayDate.getTime() ? " Torna domani per un nuovo gioco." : " Sfida completata!");
   } else banner.classList.add("hidden");
 
   $("btn-delete").disabled = isMax;
@@ -569,8 +605,17 @@ function renderStatus() {
   return { isMax };
 }
 
+function renderDayNav() {
+  const isToday = playDate.getTime() === todayDate.getTime();
+  const diff = Math.round((todayDate.getTime() - playDate.getTime()) / 86400000);
+  $("day-title").textContent = isToday ? "Oggi" : (diff === 1 ? "Ieri" : diff + " giorni fa");
+  $("day-sub").textContent = formatDateIt(playDate) + " · Gioco n. " + puzzle.day;
+  $("day-next").disabled = playDate.getTime() >= todayDate.getTime();
+  $("day-prev").disabled = playDate.getTime() <= oldestPlayable.getTime();
+}
+
 function renderAll() {
-  $("date-line").textContent = formatDateIt(now) + " · Gioco n. " + puzzle.day;
+  renderDayNav();
   renderInput(); renderFoundList(); renderStatus();
 }
 
@@ -638,6 +683,15 @@ window.addEventListener("keydown", e => {
 $("btn-delete").addEventListener("click", () => { input = input.slice(0, -1); renderInput(); });
 $("btn-shuffle").addEventListener("click", shuffleOuter);
 $("btn-submit").addEventListener("click", submit);
+
+$("day-prev").addEventListener("click", () => {
+  if (playDate.getTime() <= oldestPlayable.getTime()) return;
+  const d = new Date(playDate); d.setDate(d.getDate() - 1); loadDay(d);
+});
+$("day-next").addEventListener("click", () => {
+  if (playDate.getTime() >= todayDate.getTime()) return;
+  const d = new Date(playDate); d.setDate(d.getDate() + 1); loadDay(d);
+});
 
 /* ---------- Modals ---------- */
 function openModal(title, bodyHtml) {
@@ -728,8 +782,7 @@ $("nav-game").addEventListener("click", () => {
   window.scrollTo(0, 0);
 });
 
-buildHexBoard();
-renderAll();
+loadDay(todayDate);
 </script>
 </body>
 </html>
