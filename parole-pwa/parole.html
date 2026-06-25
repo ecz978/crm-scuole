@@ -256,6 +256,7 @@ button { font-family: inherit; }
   padding: 12px 14px; margin-bottom: 16px;
 }
 .sol-date { font-size: 14px; font-weight: 600; text-transform: capitalize; text-align: center; }
+.sol-ago { color: var(--text-muted); font-weight: 600; font-size: 12px; text-transform: none; }
 .sol-letters-card { padding: 18px; margin-bottom: 16px; text-align: center; }
 .sol-letters-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 10px; }
 .sol-letters { font-family: var(--font-mono); font-size: 24px; font-weight: 700; display: flex; justify-content: center; gap: 4px; }
@@ -677,13 +678,25 @@ $("score-btn").addEventListener("click", () => {
 });
 
 /* ---------- Soluzioni ---------- */
+// Le soluzioni di oggi non sono mai visibili: si parte da ieri e si può
+// solo andare indietro nel tempo, fino a coprire tutti i giochi distinti.
 const solToday = startOfDay(new Date());
 const solYesterday = (() => { const d = new Date(solToday); d.setDate(d.getDate() - 1); return d; })();
+const solOldest = (() => { const d = new Date(solYesterday); d.setDate(d.getDate() - (TOTAL_DAYS - 1)); return d; })();
 let solSelected = new Date(solYesterday);
 
+function daysAgoLabel(date) {
+  const diff = Math.round((solToday.getTime() - date.getTime()) / 86400000);
+  return diff === 1 ? "Ieri" : diff + " giorni fa";
+}
+
 function renderSoluzioni() {
+  // Vincoli di sicurezza: mai oltre ieri (oggi nascosto), mai prima del limite.
+  if (solSelected.getTime() > solYesterday.getTime()) solSelected = new Date(solYesterday);
+  if (solSelected.getTime() < solOldest.getTime()) solSelected = new Date(solOldest);
+
   const p = getPuzzleForDate(solSelected);
-  $("sol-date").textContent = formatDateIt(solSelected);
+  $("sol-date").innerHTML = formatDateIt(solSelected) + ' <span class="sol-ago">· ' + daysAgoLabel(solSelected) + '</span>';
   $("sol-day").textContent = p.day;
   $("sol-letters").innerHTML = puzzleLetters(p)
     .map(l => '<span class="l' + (l === p.center ? " center" : "") + '">' + l.toUpperCase() + "</span>").join("");
@@ -691,9 +704,12 @@ function renderSoluzioni() {
   $("sol-words").innerHTML = p.words
     .map(w => '<span class="chip">' + w + " <b>" + scoreForWord(w) + "</b></span>").join("");
   $("sol-next").disabled = solSelected.getTime() >= solYesterday.getTime();
-  $("sol-prev").disabled = false;
+  $("sol-prev").disabled = solSelected.getTime() <= solOldest.getTime();
 }
-$("sol-prev").addEventListener("click", () => { solSelected.setDate(solSelected.getDate() - 1); renderSoluzioni(); });
+$("sol-prev").addEventListener("click", () => {
+  if (solSelected.getTime() <= solOldest.getTime()) return;
+  solSelected.setDate(solSelected.getDate() - 1); renderSoluzioni();
+});
 $("sol-next").addEventListener("click", () => {
   if (solSelected.getTime() >= solYesterday.getTime()) return;
   solSelected.setDate(solSelected.getDate() + 1); renderSoluzioni();
