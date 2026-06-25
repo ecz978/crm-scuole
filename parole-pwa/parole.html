@@ -2,288 +2,429 @@
 <html lang="it">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>Parole</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#f6b51c" />
+<title>Parole · gioco di parole quotidiano</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f5f4f0;
+  --bg-1: #fffdf7;
+  --bg-2: #fdf4e3;
   --surface: #ffffff;
-  --border: #e2e0d8;
-  --border-strong: #c8c4b8;
-  --text: #1a1917;
-  --text-muted: #6b6760;
-  --accent: #1d4ed8;
-  --accent-hover: #1e40af;
-  --accent-light: #eff6ff;
-  --danger: #dc2626;
-  --danger-light: #fef2f2;
-  --success: #16a34a;
-  --success-light: #f0fdf4;
-  --warning: #d97706;
-  --warning-light: #fffbeb;
-  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "SFMono-Regular", "Consolas", "Liberation Mono", Menlo, monospace;
+  --surface-soft: #fffaf0;
+  --border: #f0e6d2;
+  --border-strong: #e7d8b8;
+  --text: #2b2620;
+  --text-soft: #5c5347;
+  --text-muted: #9a8f7d;
+  --honey: #f6b51c;
+  --honey-deep: #e8930a;
+  --honey-dark: #c9730a;
+  --honey-glow: rgba(246, 181, 28, 0.35);
+  --honey-light: #fdf3da;
+  --accent: #e8930a;
+  --danger: #e0453a;
+  --danger-light: #fdecea;
+  --success: #2e9e5b;
+  --success-light: #e9f8ef;
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-mono: "Space Grotesk", "SFMono-Regular", monospace;
+  --shadow-sm: 0 1px 2px rgba(80, 60, 20, 0.06);
+  --shadow: 0 4px 16px rgba(120, 90, 30, 0.08);
+  --shadow-lg: 0 12px 40px rgba(120, 90, 30, 0.14);
+  --radius: 16px;
+  --radius-sm: 12px;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 html, body {
   font-family: var(--font);
-  background: var(--bg);
   color: var(--text);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, var(--bg-2), transparent 60%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  background-attachment: fixed;
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
 
-.surface {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
+button { font-family: inherit; }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  font-family: var(--font);
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  border: 1px solid transparent;
-  white-space: nowrap;
-}
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
 
-.btn-primary {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
-}
-.btn-primary:hover { background: var(--accent-hover); }
-
-.btn-secondary {
-  background: var(--surface);
-  color: var(--text);
-  border-color: var(--border-strong);
-}
-.btn-secondary:hover { background: var(--bg); }
-
-.btn-sm { padding: 4px 10px; font-size: 12px; }
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-thead tr {
-  background: var(--bg);
-  border-bottom: 2px solid var(--border);
-}
-
-th {
-  padding: 10px 14px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-}
-
-tbody tr:last-child td { border-bottom: none; }
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.badge-gray { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
-
-.app-shell { min-height: 100vh; }
-
+/* ---------- Header ---------- */
 .app-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 20px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 40;
-}
-
-.app-logo {
-  font-size: 15px;
-  font-weight: 600;
-  font-family: var(--font-mono);
-  letter-spacing: -0.02em;
-  color: var(--text);
-}
-
-.app-logo span { color: var(--text-muted); font-weight: 400; }
-
-.page { padding: 24px 16px 48px; max-width: 1400px; margin: 0 auto; }
-.page-narrow { max-width: 640px; }
-.page-mid { max-width: 680px; }
-
-.section-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.section-header {
-  padding: 12px 16px;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.section-body { padding: 16px; }
-
-.hex-btn:active { transform: scale(0.92); }
-
-.hex-wrap { position: relative; width: 236px; height: 236px; margin: 0 auto; }
-.hex-tile { position: absolute; left: 50%; top: 50%; width: 72px; height: 68px; }
-.hex-btn {
-  width: 100%; height: 100%;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  font-family: var(--font-mono); font-size: 24px; font-weight: 600; text-transform: uppercase;
-  cursor: pointer; transition: transform 0.1s ease;
-  display: flex; align-items: center; justify-content: center; padding: 0;
-}
-.hex-center { background: var(--accent); color: #fff; border: none; }
-.hex-outer { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); }
-
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-  display: flex; align-items: center; justify-content: center; z-index: 100;
-}
-.modal-box {
-  width: 420px; max-width: 90vw; max-height: 80vh; overflow-y: auto; padding: 0;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
-}
-.modal-head {
-  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 40;
   display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(255, 253, 247, 0.82);
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid var(--border);
 }
-.modal-title { font-weight: 600; font-size: 14px; }
-.modal-close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 16px; }
-.modal-body { padding: 18px; }
-.modal-body p { margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.app-logo {
+  display: flex; align-items: center; gap: 9px;
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 22px; letter-spacing: -0.01em; color: var(--text);
+}
+.app-logo .bee {
+  width: 30px; height: 30px; display: grid; place-items: center;
+  font-size: 17px;
+  background: linear-gradient(145deg, var(--honey), var(--honey-deep));
+  border-radius: 9px;
+  box-shadow: 0 4px 12px var(--honey-glow);
+}
+.app-logo .dot { color: var(--honey-deep); }
+.header-actions { display: flex; gap: 8px; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 9px 16px; font-size: 14px; font-weight: 600;
+  border-radius: 11px; cursor: pointer; border: 1px solid transparent;
+  transition: transform 0.12s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  white-space: nowrap; user-select: none;
+}
+.btn:active { transform: translateY(1px) scale(0.98); }
+.btn svg { width: 16px; height: 16px; }
+.btn-primary {
+  color: #4a2c00;
+  background: linear-gradient(145deg, var(--honey), var(--honey-deep));
+  box-shadow: 0 6px 16px var(--honey-glow);
+}
+.btn-primary:hover { box-shadow: 0 8px 22px var(--honey-glow); }
+.btn-ghost {
+  background: var(--surface); color: var(--text-soft);
+  border-color: var(--border-strong); box-shadow: var(--shadow-sm);
+}
+.btn-ghost:hover { background: var(--surface-soft); color: var(--text); }
+.btn-sm { padding: 7px 12px; font-size: 13px; border-radius: 10px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ---------- Layout ---------- */
+.page { flex: 1; width: 100%; max-width: 560px; margin: 0 auto; padding: 22px 18px 60px; }
+.page-wide { max-width: 640px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+
+.date-line {
+  text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.01em;
+  color: var(--text-muted); margin-bottom: 18px; text-transform: capitalize;
+}
+
+/* ---------- Level / score panel ---------- */
+.level-panel {
+  width: 100%; text-align: left; cursor: pointer;
+  padding: 16px 18px; margin-bottom: 22px;
+  background: linear-gradient(135deg, var(--surface), var(--surface-soft));
+  border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); transition: transform 0.12s ease, box-shadow 0.18s ease;
+}
+.level-panel:hover { box-shadow: var(--shadow-lg); }
+.level-panel:active { transform: translateY(1px) scale(0.995); }
+.level-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.level-name-wrap { display: flex; align-items: center; gap: 9px; }
+.level-trophy {
+  width: 30px; height: 30px; display: grid; place-items: center; font-size: 15px;
+  background: var(--honey-light); border-radius: 9px;
+}
+.level-name { font-family: var(--font-display); font-weight: 600; font-size: 19px; color: var(--text); }
+.level-score { display: flex; align-items: baseline; gap: 5px; }
+.level-score b { font-size: 22px; font-weight: 700; color: var(--honey-deep); font-family: var(--font-mono); }
+.level-score span { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+.progress-track {
+  position: relative; height: 9px; border-radius: 99px;
+  background: var(--honey-light); overflow: hidden;
+}
+.progress-fill {
+  position: absolute; inset: 0 auto 0 0; height: 100%;
+  background: linear-gradient(90deg, var(--honey), var(--honey-deep));
+  border-radius: 99px; width: 0%;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.level-hint { margin-top: 9px; font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+/* ---------- Win banner ---------- */
+.win-banner {
+  text-align: center; padding: 18px; margin-bottom: 22px;
+  background: linear-gradient(135deg, var(--success-light), #f4fcf7);
+  border: 1px solid #bce8cd; border-radius: var(--radius);
+}
+.win-banner .title { font-family: var(--font-display); font-weight: 600; font-size: 17px; color: var(--success); margin-bottom: 4px; }
+.win-banner .sub { font-size: 13px; color: var(--text-soft); }
+
+/* ---------- Input display ---------- */
+.input-display {
+  text-align: center; min-height: 48px; margin-bottom: 6px;
+  font-family: var(--font-mono); font-size: 30px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  display: flex; align-items: center; justify-content: center;
+}
+.input-display .ch { color: var(--text); animation: pop-in 0.14s ease; }
+.input-display .ch.center { color: var(--honey-deep); }
+.input-display .caret {
+  width: 2px; height: 30px; margin-left: 2px; border-radius: 2px;
+  background: var(--honey-deep); animation: blink 1.1s steps(1) infinite;
+}
+.input-display.placeholder { color: var(--text-muted); font-size: 16px; letter-spacing: 0; font-weight: 500; font-family: var(--font); text-transform: none; }
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes pop-in { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.message-row {
+  text-align: center; min-height: 22px; margin-bottom: 14px;
+  font-size: 14px; font-weight: 600;
+}
+.message-row .msg { display: inline-block; padding: 3px 12px; border-radius: 99px; animation: msg-in 0.2s ease; }
+.message-row .ok { color: var(--success); background: var(--success-light); }
+.message-row .err { color: var(--danger); background: var(--danger-light); }
+@keyframes msg-in { from { transform: translateY(6px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ---------- Hex board ---------- */
+.hex-wrap { position: relative; width: 290px; height: 270px; margin: 6px auto 4px; }
+.hex-tile { position: absolute; left: 50%; top: 50%; width: 88px; height: 100px; }
+.hex-btn {
+  position: relative; width: 100%; height: 100%; padding: 0; border: none;
+  background: transparent; cursor: pointer;
+  font-family: var(--font-mono); font-size: 30px; font-weight: 700; text-transform: uppercase;
+  display: grid; place-items: center; color: var(--text);
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+.hex-btn::before {
+  content: ""; position: absolute; inset: 0;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: var(--surface);
+  border: 0; z-index: -1;
+  box-shadow: 0 4px 10px rgba(120, 90, 30, 0.12);
+}
+.hex-btn span { position: relative; z-index: 1; }
+.hex-outer::before { background: linear-gradient(160deg, #ffffff, #fdf6e6); outline: 1.5px solid var(--border-strong); outline-offset: -1.5px; }
+.hex-center { color: #5a3300; }
+.hex-center::before { background: linear-gradient(155deg, var(--honey), var(--honey-deep)); box-shadow: 0 8px 20px var(--honey-glow); }
+.hex-btn:hover { filter: brightness(1.02); transform: translateY(-2px); }
+.hex-btn:active { transform: scale(0.9); }
+.hex-btn.tap { animation: hex-tap 0.18s ease; }
+@keyframes hex-tap { 0% { transform: scale(1); } 50% { transform: scale(0.86); } 100% { transform: scale(1); } }
+
+/* ---------- Action buttons ---------- */
+.actions { display: flex; justify-content: center; gap: 12px; margin: 26px 0 30px; }
+.actions .btn-primary { min-width: 92px; }
+
+/* ---------- Found words ---------- */
+.found-card { overflow: hidden; }
+.found-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+.found-title { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+.found-count {
+  font-size: 12px; font-weight: 700; color: var(--honey-dark);
+  background: var(--honey-light); padding: 3px 10px; border-radius: 99px;
+}
+.found-body { padding: 16px 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+.found-empty { color: var(--text-muted); font-size: 14px; padding: 6px 0; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  font-family: var(--font-mono); text-transform: uppercase;
+  background: var(--surface-soft); border: 1px solid var(--border); color: var(--text-soft);
+  animation: chip-in 0.22s ease;
+}
+.chip b { color: var(--honey-dark); font-size: 12px; }
+@keyframes chip-in { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* ---------- Soluzioni ---------- */
+.sol-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; margin-bottom: 16px;
+}
+.sol-date { font-size: 14px; font-weight: 600; text-transform: capitalize; text-align: center; }
+.sol-letters-card { padding: 18px; margin-bottom: 16px; text-align: center; }
+.sol-letters-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 10px; }
+.sol-letters { font-family: var(--font-mono); font-size: 24px; font-weight: 700; display: flex; justify-content: center; gap: 4px; }
+.sol-letters .l { padding: 2px 6px; }
+.sol-letters .l.center { color: var(--honey-deep); }
+
+/* ---------- Modal ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(45, 35, 15, 0.4); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; padding: 18px;
+  animation: fade-in 0.18s ease;
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.modal-box {
+  width: 440px; max-width: 100%; max-height: 84vh; overflow-y: auto;
+  background: var(--surface); border-radius: 20px; box-shadow: var(--shadow-lg);
+  animation: modal-in 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes modal-in { from { transform: translateY(16px) scale(0.97); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+.modal-head {
+  position: sticky; top: 0; background: var(--surface);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+}
+.modal-title { font-family: var(--font-display); font-weight: 600; font-size: 18px; }
+.modal-close {
+  width: 32px; height: 32px; display: grid; place-items: center;
+  border: none; background: var(--surface-soft); color: var(--text-muted);
+  border-radius: 9px; cursor: pointer; font-size: 16px; transition: background 0.15s;
+}
+.modal-close:hover { background: var(--honey-light); color: var(--text); }
+.modal-body { padding: 20px; }
+.modal-body p { margin-bottom: 12px; font-size: 14px; line-height: 1.65; color: var(--text-soft); }
 .modal-body p:last-child { margin-bottom: 0; }
+.modal-body p b { color: var(--text); }
+
+.level-table { width: 100%; border-collapse: collapse; }
+.level-table tr { transition: background 0.15s; }
+.level-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
+.level-table tr:last-child td { border-bottom: none; }
+.level-table .lvl-name { font-weight: 600; }
+.level-table .lvl-pts { text-align: right; font-family: var(--font-mono); font-weight: 600; color: var(--text-soft); }
+.level-table tr.reached { background: var(--honey-light); }
+.level-table tr.reached .lvl-name { color: var(--honey-dark); }
+.level-table tr.current td { background: linear-gradient(90deg, var(--honey-light), transparent); font-weight: 700; }
+.level-table .check { color: var(--honey-deep); margin-right: 6px; }
+
+.score-now { font-size: 13px; color: var(--text-soft); margin-bottom: 14px; }
+.score-now b { font-size: 16px; color: var(--honey-deep); font-family: var(--font-mono); }
 
 .hidden { display: none !important; }
+
+@media (max-width: 420px) {
+  .hex-wrap { width: 264px; height: 248px; }
+  .hex-tile { width: 80px; height: 92px; }
+  .hex-btn { font-size: 27px; }
+  .actions .btn { padding: 9px 13px; }
+  .app-logo { font-size: 20px; }
+}
 </style>
 </head>
 <body>
 
+<!-- ============ GAME PAGE ============ -->
 <div id="page-game" class="app-shell">
-  <div class="app-header">
-    <div class="app-logo">Parole<span>.</span></div>
-    <div style="display:flex; gap:8px;">
-      <button class="btn btn-secondary btn-sm" id="nav-soluzioni">&#128214; Soluzioni</button>
-      <button class="btn btn-secondary btn-sm" id="btn-rules">&#8505; Regole</button>
+  <header class="app-header">
+    <div class="app-logo">
+      <span class="bee">🐝</span>
+      <span>Parole<span class="dot">.</span></span>
     </div>
-  </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" id="nav-soluzioni">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Soluzioni
+      </button>
+      <button class="btn btn-ghost btn-sm" id="btn-rules">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Regole
+      </button>
+    </div>
+  </header>
 
-  <div class="page page-narrow">
-    <div id="date-line" style="text-align:center; font-size:12px; color:var(--text-muted); margin-bottom:16px; text-transform:capitalize;"></div>
+  <main class="page">
+    <div class="date-line" id="date-line"></div>
 
-    <button id="score-btn" class="surface" style="width:100%; padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; border:1px solid var(--border);">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="color:var(--accent);">&#127942;</span>
-        <span id="level-name" style="font-weight:600; font-size:14px;"></span>
+    <button class="level-panel" id="score-btn">
+      <div class="level-top">
+        <div class="level-name-wrap">
+          <span class="level-trophy">🏆</span>
+          <span class="level-name" id="level-name"></span>
+        </div>
+        <div class="level-score"><b id="score-value">0</b><span>punti</span></div>
       </div>
-      <div id="level-detail" style="font-size:12px; color:var(--text-muted);"></div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="level-hint" id="level-hint"></div>
     </button>
 
-    <div id="max-banner" class="surface hidden" style="padding:16px; margin-bottom:20px; background:var(--success-light); border-color:var(--success); text-align:center;">
-      <div style="font-weight:600; color:var(--success); margin-bottom:4px;">&#127881; Livello massimo raggiunto! Partita conclusa.</div>
-      <div id="max-banner-detail" style="font-size:12px; color:var(--text-muted);"></div>
+    <div class="win-banner hidden" id="win-banner">
+      <div class="title">🎉 Livello massimo raggiunto!</div>
+      <div class="sub" id="win-sub"></div>
     </div>
 
-    <div id="input-display" style="text-align:center; font-size:28px; font-family:var(--font-mono); font-weight:600; letter-spacing:2px; min-height:40px; margin-bottom:8px; text-transform:uppercase;"></div>
+    <div class="input-display placeholder" id="input-display"></div>
+    <div class="message-row" id="message-row"></div>
 
-    <div id="message-row" style="text-align:center; font-size:13px; font-weight:500; margin-bottom:8px; min-height:18px;"></div>
+    <div class="hex-wrap" id="hex-board"></div>
 
-    <div id="hex-board" class="hex-wrap"></div>
-
-    <div style="display:flex; justify-content:center; gap:10px; margin-top:24px; margin-bottom:28px;">
-      <button class="btn btn-secondary" id="btn-delete">&#9003; Cancella</button>
-      <button class="btn btn-secondary" id="btn-shuffle">&#128256; Mescola</button>
-      <button class="btn btn-primary" id="btn-submit">&#8629; Invio</button>
+    <div class="actions">
+      <button class="btn btn-ghost" id="btn-delete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="m18 9-6 6M12 9l6 6"/></svg>
+        Cancella
+      </button>
+      <button class="btn btn-ghost" id="btn-shuffle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+        Mescola
+      </button>
+      <button class="btn btn-primary" id="btn-submit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
+        Invio
+      </button>
     </div>
 
-    <div class="section-card">
-      <div class="section-header">Parole trovate (<span id="found-count">0</span>)</div>
-      <div class="section-body" id="found-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+    <div class="card found-card">
+      <div class="found-head">
+        <span class="found-title">Parole trovate</span>
+        <span class="found-count" id="found-count">0</span>
+      </div>
+      <div class="found-body" id="found-list"></div>
     </div>
-  </div>
+  </main>
 </div>
 
+<!-- ============ SOLUZIONI PAGE ============ -->
 <div id="page-soluzioni" class="app-shell hidden">
-  <div class="app-header">
-    <button class="btn btn-secondary btn-sm" id="nav-game">&#8592; Torna al gioco</button>
-    <div style="font-size:14px; font-weight:600;">Soluzioni</div>
-  </div>
-  <div class="page page-mid">
-    <div class="surface" style="padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;">
-      <button class="btn btn-secondary btn-sm" id="sol-prev">&#8249; Giorno prima</button>
-      <div id="sol-date" style="font-size:13px; font-weight:500; text-transform:capitalize;"></div>
-      <button class="btn btn-secondary btn-sm" id="sol-next">Giorno dopo &#8250;</button>
+  <header class="app-header">
+    <button class="btn btn-ghost btn-sm" id="nav-game">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+      Torna al gioco
+    </button>
+    <div class="app-logo" style="font-size:18px;"><span>Soluzioni</span></div>
+  </header>
+
+  <main class="page page-wide">
+    <div class="card sol-nav">
+      <button class="btn btn-ghost btn-sm" id="sol-prev">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Prima
+      </button>
+      <div class="sol-date" id="sol-date"></div>
+      <button class="btn btn-ghost btn-sm" id="sol-next">
+        Dopo
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
     </div>
 
-    <div class="surface" style="padding:16px; margin-bottom:16px; text-align:center;">
-      <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">
-        Lettere (gioco n. <span id="sol-day"></span>)
+    <div class="card sol-letters-card">
+      <div class="sol-letters-label">Lettere · gioco n. <span id="sol-day"></span></div>
+      <div class="sol-letters" id="sol-letters"></div>
+    </div>
+
+    <div class="card found-card">
+      <div class="found-head">
+        <span class="found-title">Parole possibili</span>
+        <span class="found-count" id="sol-count"></span>
       </div>
-      <div id="sol-letters" style="font-family:var(--font-mono); font-size:20px; font-weight:600;"></div>
+      <div class="found-body" id="sol-words"></div>
     </div>
-
-    <div class="section-card">
-      <div class="section-header">Elenco parole possibili (<span id="sol-count"></span>)</div>
-      <div class="section-body" id="sol-words" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
-    </div>
-  </div>
+  </main>
 </div>
 
 <div id="modal-root"></div>
@@ -307,179 +448,129 @@ const TOTAL_DAYS = PUZZLES.length;
 
 function dayOfYear(date) {
   const start = new Date(date.getFullYear(), 0, 1);
-  const diff = Math.floor((date.getTime() - start.getTime()) / 86400000);
-  return diff + 1;
+  return Math.floor((date.getTime() - start.getTime()) / 86400000) + 1;
 }
+function dayIndexForDate(date) { return ((dayOfYear(date) - 1) % TOTAL_DAYS) + 1; }
+function getPuzzleForDate(date) { return PUZZLES[dayIndexForDate(date) - 1]; }
+function puzzleLetters(p) { return [...p.outer, p.center]; }
+function scoreForWord(w) { return w.length === 4 ? 1 : w.length; }
+function maxScoreForPuzzle(p) { return p.words.reduce((s, w) => s + scoreForWord(w), 0); }
 
-function dayIndexForDate(date) {
-  const doy = dayOfYear(date);
-  return ((doy - 1) % TOTAL_DAYS) + 1;
-}
-
-function getPuzzleForDate(date) {
-  const idx = dayIndexForDate(date);
-  return PUZZLES[idx - 1];
-}
-
-function puzzleLetters(puzzle) {
-  return [...puzzle.outer, puzzle.center];
-}
-
-function scoreForWord(word) {
-  return word.length === 4 ? 1 : word.length;
-}
-
-function maxScoreForPuzzle(puzzle) {
-  return puzzle.words.reduce((sum, w) => sum + scoreForWord(w), 0);
-}
-
-function validateWord(word, puzzle, alreadyFound) {
+function validateWord(word, p, alreadyFound) {
   const w = word.trim().toLowerCase();
   if (w.length < 4) return { ok: false, reason: "Troppo corta: minimo 4 lettere" };
-  if (!w.includes(puzzle.center)) return { ok: false, reason: "Manca la lettera centrale" };
-  const allowed = new Set(puzzleLetters(puzzle));
-  for (const ch of w) {
-    if (!allowed.has(ch)) return { ok: false, reason: "Lettera non disponibile" };
-  }
+  if (!w.includes(p.center)) return { ok: false, reason: "Manca la lettera centrale" };
+  const allowed = new Set(puzzleLetters(p));
+  for (const ch of w) if (!allowed.has(ch)) return { ok: false, reason: "Lettera non disponibile" };
   if (alreadyFound.has(w)) return { ok: false, reason: "Parola già trovata" };
-  if (!puzzle.words.includes(w)) return { ok: false, reason: "Non nell'elenco delle parole" };
+  if (!p.words.includes(w)) return { ok: false, reason: "Non nell'elenco delle parole" };
   return { ok: true, points: scoreForWord(w) };
 }
 
 function levelForScore(score, maxScore) {
-  let current = LEVELS[0];
-  let index = 0;
+  let current = LEVELS[0], index = 0;
   for (let i = 0; i < LEVELS.length; i++) {
     const threshold = Math.round((LEVELS[i].pct / 100) * maxScore);
-    if (score >= threshold) {
-      current = LEVELS[i];
-      index = i;
-    }
+    if (score >= threshold) { current = LEVELS[i]; index = i; }
   }
   const isMax = index === LEVELS.length - 1;
   const nextLevel = isMax ? null : LEVELS[index + 1];
-  const pointsToNext = nextLevel ? Math.max(0, Math.round((nextLevel.pct / 100) * maxScore) - score) : 0;
-  return { level: current, index, isMax, nextLevel, pointsToNext };
+  const curThreshold = Math.round((current.pct / 100) * maxScore);
+  const nextThreshold = nextLevel ? Math.round((nextLevel.pct / 100) * maxScore) : curThreshold;
+  const pointsToNext = nextLevel ? Math.max(0, nextThreshold - score) : 0;
+  let pct = 100;
+  if (nextLevel) {
+    const span = nextThreshold - curThreshold;
+    pct = span > 0 ? Math.min(100, Math.max(0, ((score - curThreshold) / span) * 100)) : 0;
+  }
+  return { level: current, index, isMax, nextLevel, pointsToNext, progressPct: pct };
 }
-
 function levelThresholds(maxScore) {
   return LEVELS.map(l => ({ name: l.name, points: Math.round((l.pct / 100) * maxScore) }));
 }
-
 function formatDateIt(date) {
   return date.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
-
 function todayKey(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
 }
+function startOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 
-function startOfDay(d) {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
-/* ---------- Gameplay state ---------- */
+/* ---------- State ---------- */
 const now = new Date();
 const puzzle = getPuzzleForDate(now);
 const letters = puzzleLetters(puzzle);
 const maxScore = maxScoreForPuzzle(puzzle);
-const storageKey = `parole-game-${todayKey(now)}-${puzzle.day}`;
+const storageKey = "parole-game-" + todayKey(now) + "-" + puzzle.day;
 
 let outer = [...puzzle.outer];
 let input = "";
 let found = [];
 let messageTimer = null;
-let showRules = false;
-let showScore = false;
+let modalOpen = false;
 
-(function loadFound() {
-  try {
-    const raw = localStorage.getItem(storageKey);
-    if (raw) found = JSON.parse(raw);
-  } catch (e) {}
-})();
+try { const raw = localStorage.getItem(storageKey); if (raw) found = JSON.parse(raw); } catch (e) {}
+function saveFound() { localStorage.setItem(storageKey, JSON.stringify(found)); }
+function computeScore() { return found.reduce((s, w) => s + scoreForWord(w), 0); }
 
-function saveFound() {
-  localStorage.setItem(storageKey, JSON.stringify(found));
-}
-
-function computeScore() {
-  return found.reduce((s, w) => s + scoreForWord(w), 0);
-}
+const $ = id => document.getElementById(id);
 
 function flash(text, ok) {
-  const el = document.getElementById("message-row");
-  el.textContent = text;
-  el.style.color = ok ? "var(--success)" : "var(--danger)";
+  const el = $("message-row");
+  el.innerHTML = '<span class="' + (ok ? "ok" : "err") + ' msg">' + text + "</span>";
   clearTimeout(messageTimer);
-  messageTimer = setTimeout(() => { el.textContent = ""; }, 1600);
+  messageTimer = setTimeout(() => { el.innerHTML = ""; }, 1700);
 }
 
 function renderInput() {
-  const el = document.getElementById("input-display");
-  el.innerHTML = "";
-  for (const ch of input) {
-    const span = document.createElement("span");
-    span.textContent = ch;
-    span.style.color = ch === puzzle.center ? "var(--accent)" : "var(--text)";
-    el.appendChild(span);
+  const el = $("input-display");
+  if (!input) {
+    el.classList.add("placeholder");
+    el.textContent = "Digita o tocca le lettere…";
+    return;
   }
-  const cursor = document.createElement("span");
-  cursor.style.opacity = "0.3";
-  cursor.textContent = "|";
-  el.appendChild(cursor);
+  el.classList.remove("placeholder");
+  let html = "";
+  for (const ch of input) html += '<span class="ch' + (ch === puzzle.center ? " center" : "") + '">' + ch + "</span>";
+  html += '<span class="caret"></span>';
+  el.innerHTML = html;
 }
 
 function renderFoundList() {
-  document.getElementById("found-count").textContent = found.length;
-  const list = document.getElementById("found-list");
-  list.innerHTML = "";
+  $("found-count").textContent = found.length;
+  const list = $("found-list");
   if (found.length === 0) {
-    const empty = document.createElement("div");
-    empty.style.color = "var(--text-muted)";
-    empty.style.fontSize = "13px";
-    empty.textContent = "Nessuna parola trovata, inizia a giocare!";
-    list.appendChild(empty);
+    list.innerHTML = '<div class="found-empty">Nessuna parola trovata, inizia a giocare!</div>';
     return;
   }
-  [...found].sort((a, b) => a.localeCompare(b)).forEach(w => {
-    const span = document.createElement("span");
-    span.className = "badge badge-gray";
-    span.style.fontFamily = "var(--font-mono)";
-    span.style.textTransform = "uppercase";
-    span.innerHTML = `${w} <strong style="margin-left:4px;">${scoreForWord(w)}</strong>`;
-    list.appendChild(span);
-  });
+  list.innerHTML = [...found].sort((a, b) => a.localeCompare(b))
+    .map(w => '<span class="chip">' + w + " <b>" + scoreForWord(w) + "</b></span>").join("");
 }
 
 function renderStatus() {
   const score = computeScore();
-  const { level, isMax, nextLevel, pointsToNext } = levelForScore(score, maxScore);
+  const { level, isMax, nextLevel, pointsToNext, progressPct } = levelForScore(score, maxScore);
+  $("level-name").textContent = level.name;
+  $("score-value").textContent = score;
+  $("progress-fill").style.width = progressPct + "%";
+  $("level-hint").textContent = isMax
+    ? "Hai raggiunto il livello massimo!"
+    : pointsToNext + ' punti al livello "' + nextLevel.name + '"';
 
-  document.getElementById("level-name").textContent = level.name;
-  document.getElementById("level-detail").textContent = isMax
-    ? `Punteggio: ${score}`
-    : `${score} pt · ${pointsToNext} al livello "${nextLevel.name}"`;
-
-  const banner = document.getElementById("max-banner");
+  const banner = $("win-banner");
   if (isMax) {
     banner.classList.remove("hidden");
-    document.getElementById("max-banner-detail").textContent = `${found.length} parole trovate · ${score} punti. Torna domani per un nuovo gioco.`;
-  } else {
-    banner.classList.add("hidden");
-  }
+    $("win-sub").textContent = found.length + " parole trovate · " + score + " punti. Torna domani per un nuovo gioco.";
+  } else banner.classList.add("hidden");
 
-  document.getElementById("btn-delete").disabled = isMax;
-  document.getElementById("btn-submit").disabled = isMax;
-
-  return { score, isMax };
+  $("btn-delete").disabled = isMax;
+  $("btn-submit").disabled = isMax;
+  return { isMax };
 }
 
 function renderAll() {
-  document.getElementById("date-line").textContent = `${formatDateIt(now)} · Gioco n. ${puzzle.day}`;
-  renderInput();
-  renderFoundList();
-  renderStatus();
+  $("date-line").textContent = formatDateIt(now) + " · Gioco n. " + puzzle.day;
+  renderInput(); renderFoundList(); renderStatus();
 }
 
 function submit() {
@@ -489,7 +580,7 @@ function submit() {
   if (result.ok && result.points) {
     found.push(input.trim().toLowerCase());
     saveFound();
-    flash(`+${result.points} punti`, true);
+    flash("+" + result.points + (result.points === 1 ? " punto" : " punti"), true);
   } else {
     flash(result.reason || "Parola non valida", false);
   }
@@ -498,196 +589,129 @@ function submit() {
 }
 
 function shuffleOuter() {
-  const copy = [...outer];
-  for (let i = copy.length - 1; i > 0; i--) {
+  for (let i = outer.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+    [outer[i], outer[j]] = [outer[j], outer[i]];
   }
-  outer = copy;
   buildHexBoard();
 }
 
-const HEX_SIZE = 72;
-const RADIUS = 82;
-
+const RADIUS = 96;
 function buildHexBoard() {
-  const wrap = document.getElementById("hex-board");
+  const wrap = $("hex-board");
   wrap.innerHTML = "";
-
   function makeHex(letter, variant, x, y) {
     const tile = document.createElement("div");
     tile.className = "hex-tile";
-    tile.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+    tile.style.transform = "translate(calc(-50% + " + x + "px), calc(-50% + " + y + "px))";
     const btn = document.createElement("button");
     btn.className = "hex-btn " + (variant === "center" ? "hex-center" : "hex-outer");
-    btn.textContent = letter;
+    btn.innerHTML = "<span>" + letter + "</span>";
     btn.addEventListener("click", () => {
       const { isMax } = renderStatus();
       if (isMax) return;
       input += letter;
       renderInput();
+      btn.classList.remove("tap"); void btn.offsetWidth; btn.classList.add("tap");
     });
     tile.appendChild(btn);
     wrap.appendChild(tile);
   }
-
   makeHex(puzzle.center, "center", 0, 0);
   outer.forEach((letter, i) => {
     const angle = (Math.PI / 180) * (i * 60 - 90);
-    const x = RADIUS * Math.cos(angle);
-    const y = RADIUS * Math.sin(angle);
-    makeHex(letter, "outer", x, y);
+    makeHex(letter, "outer", RADIUS * Math.cos(angle), RADIUS * Math.sin(angle));
   });
 }
 
 window.addEventListener("keydown", e => {
-  if (document.getElementById("page-game").classList.contains("hidden")) return;
-  if (showRules || showScore) return;
-  if (e.key === "Enter") {
-    submit();
-  } else if (e.key === "Backspace") {
-    input = input.slice(0, -1);
-    renderInput();
-  } else if (/^[a-zA-Z]$/.test(e.key) && letters.includes(e.key.toLowerCase())) {
-    const { isMax } = renderStatus();
-    if (isMax) return;
-    input += e.key.toLowerCase();
-    renderInput();
+  if ($("page-game").classList.contains("hidden") || modalOpen) return;
+  if (e.key === "Enter") submit();
+  else if (e.key === "Backspace") { input = input.slice(0, -1); renderInput(); }
+  else if (/^[a-zA-Z]$/.test(e.key) && letters.includes(e.key.toLowerCase())) {
+    if (renderStatus().isMax) return;
+    input += e.key.toLowerCase(); renderInput();
   }
 });
 
-document.getElementById("btn-delete").addEventListener("click", () => {
-  input = input.slice(0, -1);
-  renderInput();
-});
-document.getElementById("btn-shuffle").addEventListener("click", shuffleOuter);
-document.getElementById("btn-submit").addEventListener("click", submit);
+$("btn-delete").addEventListener("click", () => { input = input.slice(0, -1); renderInput(); });
+$("btn-shuffle").addEventListener("click", shuffleOuter);
+$("btn-submit").addEventListener("click", submit);
 
 /* ---------- Modals ---------- */
 function openModal(title, bodyHtml) {
-  const root = document.getElementById("modal-root");
-  root.innerHTML = "";
-  const overlay = document.createElement("div");
-  overlay.className = "modal-overlay";
-  overlay.addEventListener("click", closeModal);
-  const box = document.createElement("div");
-  box.className = "modal-box";
-  box.addEventListener("click", e => e.stopPropagation());
-  box.innerHTML = `
-    <div class="modal-head">
-      <div class="modal-title">${title}</div>
-      <button class="modal-close" id="modal-close-btn">&#10005;</button>
-    </div>
-    <div class="modal-body">${bodyHtml}</div>
-  `;
-  overlay.appendChild(box);
-  root.appendChild(overlay);
-  document.getElementById("modal-close-btn").addEventListener("click", closeModal);
+  modalOpen = true;
+  const root = $("modal-root");
+  root.innerHTML =
+    '<div class="modal-overlay" id="ov"><div class="modal-box" id="bx">' +
+    '<div class="modal-head"><div class="modal-title">' + title + '</div>' +
+    '<button class="modal-close" id="mc">✕</button></div>' +
+    '<div class="modal-body">' + bodyHtml + '</div></div></div>';
+  $("ov").addEventListener("click", closeModal);
+  $("bx").addEventListener("click", e => e.stopPropagation());
+  $("mc").addEventListener("click", closeModal);
 }
+function closeModal() { $("modal-root").innerHTML = ""; modalOpen = false; }
 
-function closeModal() {
-  document.getElementById("modal-root").innerHTML = "";
-  showRules = false;
-  showScore = false;
-}
-
-document.getElementById("btn-rules").addEventListener("click", () => {
-  showRules = true;
-  openModal("Regole", `
-    <p>Crea quante più parole possibili con le lettere a disposizione. Le parole devono essere di almeno quattro
-    lettere e contenere sempre la lettera centrale. La stessa lettera può essere usata più volte per comporre una
-    parola.</p>
-    <p>Più lunga è la parola, più punti ottieni. Clicca su Punteggio per vedere quanti punti servono per passare di
-    livello. La partita finisce quando si raggiunge il livello massimo.</p>
-    <p>L'elenco delle parole possibili è disponibile il giorno successivo, cliccando su Soluzioni nel menù.</p>
-  `);
+$("btn-rules").addEventListener("click", () => {
+  openModal("Come si gioca", '' +
+    '<p>Crea quante più parole possibili con le lettere a disposizione. Ogni parola deve essere di <b>almeno quattro lettere</b> e contenere sempre la <b>lettera centrale</b>. La stessa lettera può essere usata più volte.</p>' +
+    '<p>Più lunga è la parola, più punti ottieni. Una parola di 4 lettere vale 1 punto; da 5 lettere in su, vale quanto la sua lunghezza.</p>' +
+    '<p>Sali di livello accumulando punti, fino a <b>Genio</b>: la partita si conclude lì. L\'elenco completo delle parole è disponibile il giorno successivo nella sezione <b>Soluzioni</b>.</p>');
 });
 
-document.getElementById("score-btn").addEventListener("click", () => {
-  showScore = true;
+$("score-btn").addEventListener("click", () => {
   const score = computeScore();
+  const { index } = levelForScore(score, maxScore);
   const thresholds = levelThresholds(maxScore);
-  const rows = thresholds.map(t => `
-    <tr ${score >= t.points ? 'style="background:var(--accent-light);"' : ""}>
-      <td>${t.name}</td>
-      <td>${t.points}</td>
-    </tr>
-  `).join("");
-  openModal("Punteggio", `
-    <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
-      Il tuo punteggio: <strong style="color:var(--text);">${score}</strong>
-    </div>
-    <table>
-      <thead><tr><th>Livello</th><th>Punti necessari</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `);
+  const rows = thresholds.map((t, i) => {
+    const reached = score >= t.points;
+    const cls = (reached ? "reached " : "") + (i === index ? "current" : "");
+    return '<tr class="' + cls.trim() + '"><td class="lvl-name">' +
+      (reached ? '<span class="check">✓</span>' : "") + t.name +
+      '</td><td class="lvl-pts">' + t.points + "</td></tr>";
+  }).join("");
+  openModal("Livelli e punteggio",
+    '<div class="score-now">Il tuo punteggio: <b>' + score + '</b> / ' + maxScore + '</div>' +
+    '<table class="level-table"><tbody>' + rows + "</tbody></table>");
 });
 
-/* ---------- Soluzioni view ---------- */
+/* ---------- Soluzioni ---------- */
 const solToday = startOfDay(new Date());
-const solYesterday = (() => {
-  const d = new Date(solToday);
-  d.setDate(d.getDate() - 1);
-  return d;
-})();
+const solYesterday = (() => { const d = new Date(solToday); d.setDate(d.getDate() - 1); return d; })();
 let solSelected = new Date(solYesterday);
 
 function renderSoluzioni() {
   const p = getPuzzleForDate(solSelected);
-  document.getElementById("sol-date").textContent = formatDateIt(solSelected);
-  document.getElementById("sol-day").textContent = p.day;
-
-  const lettersEl = document.getElementById("sol-letters");
-  lettersEl.innerHTML = "";
-  puzzleLetters(p).forEach(l => {
-    const span = document.createElement("span");
-    span.textContent = l.toUpperCase();
-    span.style.margin = "0 4px";
-    span.style.color = l === p.center ? "var(--accent)" : "var(--text)";
-    lettersEl.appendChild(span);
-  });
-
-  document.getElementById("sol-count").textContent = p.words.length;
-  const wordsEl = document.getElementById("sol-words");
-  wordsEl.innerHTML = "";
-  p.words.forEach(w => {
-    const span = document.createElement("span");
-    span.className = "badge badge-gray";
-    span.style.fontFamily = "var(--font-mono)";
-    span.style.textTransform = "uppercase";
-    span.innerHTML = `${w} <strong style="margin-left:4px;">${scoreForWord(w)}</strong>`;
-    wordsEl.appendChild(span);
-  });
-
-  document.getElementById("sol-next").disabled = solSelected.getTime() >= solYesterday.getTime();
+  $("sol-date").textContent = formatDateIt(solSelected);
+  $("sol-day").textContent = p.day;
+  $("sol-letters").innerHTML = puzzleLetters(p)
+    .map(l => '<span class="l' + (l === p.center ? " center" : "") + '">' + l.toUpperCase() + "</span>").join("");
+  $("sol-count").textContent = p.words.length;
+  $("sol-words").innerHTML = p.words
+    .map(w => '<span class="chip">' + w + " <b>" + scoreForWord(w) + "</b></span>").join("");
+  $("sol-next").disabled = solSelected.getTime() >= solYesterday.getTime();
+  $("sol-prev").disabled = false;
 }
-
-document.getElementById("sol-prev").addEventListener("click", () => {
-  solSelected.setDate(solSelected.getDate() - 1);
-  renderSoluzioni();
-});
-document.getElementById("sol-next").addEventListener("click", () => {
+$("sol-prev").addEventListener("click", () => { solSelected.setDate(solSelected.getDate() - 1); renderSoluzioni(); });
+$("sol-next").addEventListener("click", () => {
   if (solSelected.getTime() >= solYesterday.getTime()) return;
-  solSelected.setDate(solSelected.getDate() + 1);
-  renderSoluzioni();
+  solSelected.setDate(solSelected.getDate() + 1); renderSoluzioni();
 });
 
-/* ---------- Page navigation ---------- */
-function showGamePage() {
-  document.getElementById("page-soluzioni").classList.add("hidden");
-  document.getElementById("page-game").classList.remove("hidden");
-}
-function showSoluzioniPage() {
-  document.getElementById("page-game").classList.add("hidden");
-  document.getElementById("page-soluzioni").classList.remove("hidden");
+/* ---------- Navigation ---------- */
+$("nav-soluzioni").addEventListener("click", () => {
+  $("page-game").classList.add("hidden");
+  $("page-soluzioni").classList.remove("hidden");
+  window.scrollTo(0, 0);
   renderSoluzioni();
-}
+});
+$("nav-game").addEventListener("click", () => {
+  $("page-soluzioni").classList.add("hidden");
+  $("page-game").classList.remove("hidden");
+  window.scrollTo(0, 0);
+});
 
-document.getElementById("nav-soluzioni").addEventListener("click", showSoluzioniPage);
-document.getElementById("nav-game").addEventListener("click", showGamePage);
-
-/* ---------- Init ---------- */
 buildHexBoard();
 renderAll();
 </script>
