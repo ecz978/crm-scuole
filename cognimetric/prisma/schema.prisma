@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// ─────────────────────────────────────────────
+// Tentativo di test
+// ─────────────────────────────────────────────
+model TestAttempt {
+  id            String       @id @default(cuid())
+  locale        String
+  seed          String // seed usato per generare gli item procedurali di questo tentativo
+  status        AttemptStatus @default(IN_PROGRESS)
+  consentGiven  Boolean      @default(false)
+  consentAt     DateTime?
+  startedAt     DateTime     @default(now())
+  submittedAt   DateTime?
+
+  // punteggi (null finché non calcolati)
+  compositeScore   Int?
+  domainScores     Json? // { logical: 112, numerical: 98, verbal: 105, spatial: 100, memory: 97, speed: 103 }
+  percentile       Float?
+  reliabilityFlag  String? // es. "ok" | "risposte troppo veloci" | "troppi item saltati"
+
+  email         String? // opzionale, solo per invio del report — cancellabile su richiesta
+  answers       Answer[]
+  payment       Payment?
+
+  ipHash        String? // hash, mai IP in chiaro (minimizzazione dati)
+  userAgent     String?
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([status])
+  @@map("test_attempts")
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  SCORED
+  PAID
+  EXPIRED
+}
+
+model Answer {
+  id            String   @id @default(cuid())
+  attemptId     String
+  attempt       TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  domain        String // logical | numerical | verbal | spatial | memory | speed
+  itemId        String // id dell'item (fisso per banca verbale, generato per item procedurali)
+  correct       Boolean
+  responseMs    Int // tempo di risposta in millisecondi
+  difficulty    Float // parametro di difficoltà dell'item (b), su scala logit
+  createdAt     DateTime @default(now())
+
+  @@index([attemptId])
+  @@map("answers")
+}
+
+// ─────────────────────────────────────────────
+// Pagamento
+// ─────────────────────────────────────────────
+model Payment {
+  id            String   @id @default(cuid())
+  attemptId     String   @unique
+  attempt       TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  provider      PaymentProvider
+  providerRef   String   // stripe session id / paypal order id
+  amountCents   Int
+  currency      String
+  status        PaymentStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([providerRef])
+  @@map("payments")
+}
+
+enum PaymentProvider {
+  STRIPE
+  PAYPAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// ─────────────────────────────────────────────
+// Consenso cookie (log per accountability GDPR)
+// ─────────────────────────────────────────────
+model CookieConsent {
+  id            String   @id @default(cuid())
+  consentId     String   @unique // id salvato anche nel cookie del browser
+  analytics     Boolean  @default(false)
+  marketing     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("cookie_consents")
+}
+
+// ─────────────────────────────────────────────
+// Blog
+// ─────────────────────────────────────────────
+model BlogPost {
+  id            String   @id @default(cuid())
+  slug          String
+  locale        String
+  title         String
+  excerpt       String
+  content       String   @db.Text
+  coverImage    String?
+  publishedAt   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([slug, locale])
+  @@index([locale, publishedAt])
+  @@map("blog_posts")
+}
+
+// ─────────────────────────────────────────────
+// Richieste GDPR (accesso / cancellazione dati)
+// ─────────────────────────────────────────────
+model DataRequest {
+  id            String   @id @default(cuid())
+  type          DataRequestType
+  email         String
+  status        DataRequestStatus @default(PENDING)
+  notes         String?
+  createdAt     DateTime @default(now())
+  resolvedAt    DateTime?
+
+  @@map("data_requests")
+}
+
+enum DataRequestType {
+  ACCESS
+  DELETE
+}
+
+enum DataRequestStatus {
+  PENDING
+  DONE
+}
