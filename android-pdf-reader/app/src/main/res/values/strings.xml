@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lettore PDF</string>
+    <string name="recent">Recenti</string>
+    <string name="open_pdf">Apri PDF</string>
+    <string name="empty_title">Nessun PDF recente</string>
+    <string name="empty_hint">Tocca “Apri PDF” per scegliere un file.</string>
+    <string name="remove_recent">Rimuovi dai recenti</string>
+    <string name="page_of">Pagina %1$d di %2$d</string>
+    <string name="goto_page">Vai a pagina</string>
+    <string name="goto_hint">Da 1 a %1$d</string>
+    <string name="go">Vai</string>
+    <string name="cancel">Annulla</string>
+    <string name="night_mode">Modalità notte</string>
+    <string name="day_mode">Modalità giorno</string>
+    <string name="share">Condividi</string>
+    <string name="back">Indietro</string>
+    <string name="err_open">Impossibile aprire il file.</string>
+    <string name="err_password">Questo PDF è protetto da password, che l’app non supporta.</string>
+    <string name="err_share">Nessuna app disponibile per condividere.</string>
+    <string name="just_now">Adesso</string>
+</resources>
