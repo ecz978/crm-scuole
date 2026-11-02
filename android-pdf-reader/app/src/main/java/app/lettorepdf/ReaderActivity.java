@@ -203,12 +203,6 @@ public class ReaderActivity extends Activity implements PdfEngine.Listener, PdfV
         setBars(!barsVisible);
     }
 
-    @Override
-    public void onScrollStarted() {
-        // Durante la ricerca la barra resta, serve per spostarsi tra i risultati.
-        if (barsVisible && !searchMode) setBars(false);
-    }
-
     private void setBars(boolean show) {
         barsVisible = show;
         Ui.systemBars(this, !night, !show);

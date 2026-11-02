@@ -45,8 +45,6 @@ public class PdfView extends View {
         void onPageChanged(int page, int count);
 
         void onTap();
-
-        void onScrollStarted();
     }
 
     private static final float MAX_ZOOM = 5f;
@@ -105,7 +103,7 @@ public class PdfView extends View {
     private final GestureDetector gestures;
     private final ScaleGestureDetector scaler;
     private ValueAnimator zoomAnim;
-    private boolean zoomAnimating, scrolling, dragging;
+    private boolean zoomAnimating, dragging;
     private float dragGrab;
     private long scaleEndedAt, lastScrollMs;
     private float indicatorAlpha;
@@ -640,8 +638,6 @@ public class PdfView extends View {
         if (handleThumb(e)) return true;
         scaler.onTouchEvent(e);
         gestures.onTouchEvent(e);
-        int action = e.getActionMasked();
-        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) scrolling = false;
         return true;
     }
 
@@ -722,13 +718,6 @@ public class PdfView extends View {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float dx, float dy) {
-            if (!scrolling) {
-                scrolling = true;
-                // Il pinch (due dita) non è "leggere scorrendo": le barre devono restare dove sono.
-                if (listener != null && e2 != null && e2.getPointerCount() == 1 && !scaler.isInProgress()) {
-                    listener.onScrollStarted();
-                }
-            }
             offX += dx;
             offY += dy;
             clampOffsets();
