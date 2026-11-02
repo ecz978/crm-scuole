@@ -1,0 +1,1 @@
+Prima versione su F-Droid: lettura PDF con zoom, file recenti, ricerca nel testo (Android 15 o aggiornamenti recenti) e modalità notte.

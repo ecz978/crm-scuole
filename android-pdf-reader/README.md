@@ -27,3 +27,13 @@ APK pronto: nella tab Actions di GitHub, job "Android PDF reader", artifact `let
 Per Play Store serve una chiave di rilascio vera.
 
 In locale (JDK 17 + Android SDK): `./gradlew assembleRelease`.
+
+## Licenza
+
+Software libero, [GNU GPL v3 o successiva](LICENSE). Copyright (C) 2026 ecz978.
+
+## Distribuzione
+
+- GitHub Releases: APK per l'installazione diretta.
+- F-Droid: vedi [FDROID.md](FDROID.md).
+- Google Play: vedi [store/PLAY-CONSOLE.md](store/PLAY-CONSOLE.md).

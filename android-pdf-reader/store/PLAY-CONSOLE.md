@@ -8,7 +8,7 @@ Le regole (soprattutto quelle sui test per i nuovi account) vanno verificate sul
 - [ ] Account sviluppatore Google Play (25 $ una tantum, verifica dell'identità).
 - [ ] **Account personale:** per passare in produzione serve un test chiuso con almeno 12 tester per 14 giorni consecutivi (regola per gli account personali creati dopo novembre 2023).
       **Account organizzazione:** nessun test obbligatorio, serve il numero D-U-N-S.
-- [ ] Nome del pacchetto definitivo (`applicationId`). Dopo il primo caricamento non si cambia più.
+- [ ] Nome del pacchetto definitivo (`applicationId`): ora è `io.github.ecz978.pdfreader`. Dopo il primo caricamento non si cambia più.
 - [ ] Chiave di caricamento e segreti in GitHub (vedi sotto).
 - [ ] Indirizzo email di contatto: è **pubblico** nella scheda. Inseriscilo anche in `PRIVACY.md`.
 - [ ] Informativa privacy pubblicata a un indirizzo web (vedi sotto).

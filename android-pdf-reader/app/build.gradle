@@ -7,11 +7,11 @@ android {
     compileSdk 36
 
     defaultConfig {
-        applicationId 'app.lettorepdf'
+        applicationId 'io.github.ecz978.pdfreader'
         minSdk 26
         targetSdk 36
-        versionCode 4
-        versionName '1.3'
+        versionCode 5
+        versionName '1.4'
     }
 
     buildTypes {
@@ -22,6 +22,8 @@ android {
             // Firmato con la chiave di debug: installabile subito (sideload).
             // Per Play Store serve una chiave di rilascio vera.
             signingConfig signingConfigs.debug
+            // Niente hash del commit nell'APK: build riproducibile.
+            vcsInfo.include = false
         }
     }
 
@@ -32,6 +34,12 @@ android {
 
     buildFeatures {
         buildConfig false
+    }
+
+    // F-Droid: niente blocchi di metadati firmati da Google nell'APK (privacy e build riproducibile).
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     lint {
