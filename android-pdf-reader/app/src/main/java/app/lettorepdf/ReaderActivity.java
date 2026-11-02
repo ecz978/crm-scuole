@@ -13,15 +13,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.text.InputType;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.List;
 import java.util.Locale;
 
 /** Lettore: pagine a tutto schermo, barra che compare con un tocco. */
@@ -33,6 +36,15 @@ public class ReaderActivity extends Activity implements PdfEngine.Listener, PdfV
     private View root, bar, spinner;
     private TextView title, subtitle, message;
     private ImageButton btnBack, btnGoto, btnNight, btnShare;
+    private View rowMain, rowSearch;
+    private EditText searchInput;
+    private TextView searchCount;
+    private ImageButton btnSearch, btnSearchClose, btnPrev, btnNext;
+
+    private final SearchResults results = new SearchResults();
+    private boolean searchMode;
+    private boolean queried;
+    private int searchId;
 
     private SharedPreferences prefs;
     private PdfEngine engine;
@@ -69,6 +81,14 @@ public class ReaderActivity extends Activity implements PdfEngine.Listener, PdfV
         btnGoto = findViewById(R.id.btn_goto);
         btnNight = findViewById(R.id.btn_night);
         btnShare = findViewById(R.id.btn_share);
+        rowMain = findViewById(R.id.row_main);
+        rowSearch = findViewById(R.id.row_search);
+        searchInput = findViewById(R.id.search_input);
+        searchCount = findViewById(R.id.search_count);
+        btnSearch = findViewById(R.id.btn_search);
+        btnSearchClose = findViewById(R.id.btn_search_close);
+        btnPrev = findViewById(R.id.btn_prev);
+        btnNext = findViewById(R.id.btn_next);
 
         name = displayName(uri);
         title.setText(name);
@@ -82,6 +102,19 @@ public class ReaderActivity extends Activity implements PdfEngine.Listener, PdfV
             applyChrome();
         });
         btnShare.setOnClickListener(v -> share());
+        btnSearch.setOnClickListener(v -> openSearch());
+        btnSearchClose.setOnClickListener(v -> closeSearch());
+        btnPrev.setOnClickListener(v -> stepHit(-1));
+        btnNext.setOnClickListener(v -> stepHit(1));
+        searchInput.setOnEditorActionListener((v, actionId, ev) -> {
+            boolean enter = ev != null && ev.getKeyCode() == KeyEvent.KEYCODE_ENTER
+                    && ev.getAction() == KeyEvent.ACTION_DOWN;
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || enter) {
+                startSearch();
+                return true;
+            }
+            return false;
+        });
 
         root.setOnApplyWindowInsetsListener((v, in) -> {
             // A barre di sistema nascoste gli inset valgono 0: li ignoriamo per non far saltare il layout.
@@ -135,6 +168,28 @@ public class ReaderActivity extends Activity implements PdfEngine.Listener, PdfV
         pdf.onTile(key, epoch, bitmap);
     }
 
+    @Override
+    public void onSearchHits(int id, int page, float pageW, float pageH, List<SearchHit> hits) {
+        if (id != searchId || !searchMode) return;
+        pdf.onPageSizes(page, new float[]{pageW}, new float[]{pageH});   // le coordinate sono in punti della pagina reale
+        final int before = results.size();
+        final boolean capped = results.add(hits);
+        pdf.addHits(hits.subList(0, Math.min(hits.size(), results.size() - before)));
+        if (before == 0 && results.current() != null) pdf.showHit(results.current());
+        if (capped) {
+            engine.cancelSearch();
+            finishSearch();
+        } else {
+            updateCount();
+        }
+    }
+
+    @Override
+    public void onSearchDone(int id) {
+        if (id != searchId || !searchMode) return;
+        finishSearch();
+    }
+
     // ---------------------------------------------------------------- vista
 
     @Override
@@ -149,7 +204,8 @@ public class ReaderActivity extends Activity implements PdfEngine.Listener, PdfV
 
     @Override
     public void onScrollStarted() {
-        if (barsVisible) setBars(false);
+        // Durante la ricerca la barra resta, serve per spostarsi tra i risultati.
+        if (barsVisible && !searchMode) setBars(false);
     }
 
     private void setBars(boolean show) {
@@ -177,11 +233,107 @@ public class ReaderActivity extends Activity implements PdfEngine.Listener, PdfV
         title.setTextColor(fg);
         subtitle.setTextColor(fg2);
         message.setTextColor(fg2);
-        for (ImageButton b : new ImageButton[]{btnBack, btnGoto, btnNight, btnShare}) b.setColorFilter(fg);
+        for (ImageButton b : new ImageButton[]{btnBack, btnGoto, btnNight, btnShare, btnSearch,
+                btnSearchClose, btnPrev, btnNext}) {
+            b.setColorFilter(fg);
+        }
+        searchInput.setTextColor(fg);
+        searchInput.setHintTextColor(fg2);
+        searchCount.setTextColor(fg2);
         btnNight.setImageResource(night ? R.drawable.ic_sun : R.drawable.ic_moon);
         btnNight.setContentDescription(getString(night ? R.string.day_mode : R.string.night_mode));
         ((android.widget.ProgressBar) spinner).setIndeterminateTintList(ColorStateList.valueOf(fg2));
         Ui.systemBars(this, !night, !barsVisible);
+    }
+
+    // ---------------------------------------------------------------- ricerca
+
+    private void openSearch() {
+        if (!opened) return;
+        if (!PdfEngine.searchSupported()) {
+            new AlertDialog.Builder(this)
+                    .setMessage(R.string.search_unsupported)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+            return;
+        }
+        searchMode = true;
+        queried = false;
+        results.reset(false);
+        if (!barsVisible) setBars(true);
+        rowMain.setVisibility(View.GONE);
+        rowSearch.setVisibility(View.VISIBLE);
+        searchInput.setText("");
+        updateCount();
+        searchInput.requestFocus();
+        searchInput.post(() -> {
+            InputMethodManager im = getSystemService(InputMethodManager.class);
+            if (im != null) im.showSoftInput(searchInput, InputMethodManager.SHOW_IMPLICIT);
+        });
+    }
+
+    private void closeSearch() {
+        if (!searchMode) return;
+        searchMode = false;
+        searchId++;                       // i risultati ancora in arrivo vengono ignorati
+        if (engine != null) engine.cancelSearch();
+        results.reset(false);
+        pdf.clearHits();
+        hideKeyboard();
+        rowSearch.setVisibility(View.GONE);
+        rowMain.setVisibility(View.VISIBLE);
+    }
+
+    private void startSearch() {
+        String q = searchInput.getText().toString().trim();
+        if (q.isEmpty() || engine == null) return;
+        hideKeyboard();
+        searchId++;
+        queried = true;
+        results.reset(true);
+        pdf.clearHits();
+        updateCount();
+        engine.search(q, pdf.currentPage(), searchId);
+    }
+
+    private void finishSearch() {
+        results.finish();
+        updateCount();
+        if (results.size() == 0) Toast.makeText(this, R.string.search_none, Toast.LENGTH_LONG).show();
+    }
+
+    private void stepHit(int direction) {
+        SearchHit h = results.step(direction);
+        if (h == null) return;
+        pdf.showHit(h);
+        updateCount();
+    }
+
+    private void updateCount() {
+        int n = results.size();
+        String t;
+        if (n == 0) {
+            t = results.running() ? "…" : queried ? "0" : "";
+        } else {
+            t = getString(R.string.search_count, results.index() + 1, n)
+                    + (results.running() || results.capped() ? "+" : "");
+        }
+        searchCount.setText(t);
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager im = getSystemService(InputMethodManager.class);
+        if (im != null) im.hideSoftInputFromWindow(searchInput.getWindowToken(), 0);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onBackPressed() {
+        if (searchMode) {
+            closeSearch();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     // ---------------------------------------------------------------- azioni

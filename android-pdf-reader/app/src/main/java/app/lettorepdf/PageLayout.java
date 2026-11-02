@@ -60,6 +60,11 @@ final class PageLayout {
 
     float height(int i) { return height[i]; }
 
+    /** Dimensioni della pagina in punti PDF. */
+    float ptWidth(int i) { return ptW[i]; }
+
+    float ptHeight(int i) { return ptH[i]; }
+
     /** Indice della pagina che contiene y (lo spazio tra due pagine appartiene alla precedente). */
     int pageAt(float y) {
         if (count == 0) return 0;

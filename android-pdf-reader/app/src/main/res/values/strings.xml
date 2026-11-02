@@ -19,4 +19,12 @@
     <string name="err_password">Questo PDF è protetto da password, che l’app non supporta.</string>
     <string name="err_share">Nessuna app disponibile per condividere.</string>
     <string name="just_now">Adesso</string>
+    <string name="search">Cerca</string>
+    <string name="search_hint">Cerca nel documento</string>
+    <string name="search_count">%1$d / %2$d</string>
+    <string name="search_none">Nessun risultato. Nei PDF scansionati il testo non è ricercabile.</string>
+    <string name="search_unsupported">La ricerca nel testo richiede Android 15 o un aggiornamento di sistema recente: su questo telefono non è disponibile.</string>
+    <string name="close_search">Chiudi ricerca</string>
+    <string name="prev_hit">Risultato precedente</string>
+    <string name="next_hit">Risultato successivo</string>
 </resources>

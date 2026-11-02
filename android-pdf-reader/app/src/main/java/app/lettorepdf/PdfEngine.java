@@ -5,12 +5,17 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.graphics.pdf.PdfRenderer;
+import android.graphics.pdf.models.PageMatchBounds;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
+import android.os.SystemClock;
+import android.os.ext.SdkExtensions;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,6 +53,21 @@ final class PdfEngine {
         void onPageSizes(int start, float[] w, float[] h);
 
         void onTile(TileKey key, int epoch, Bitmap bitmap);
+
+        /** Risultati trovati su una pagina (mai vuoto), con le dimensioni reali della pagina in punti. */
+        void onSearchHits(int searchId, int page, float pageW, float pageH, List<SearchHit> hits);
+
+        void onSearchDone(int searchId);
+    }
+
+    /**
+     * La ricerca nel testo esiste in PdfRenderer da Android 15 (API 35) e, con gli aggiornamenti
+     * di sistema, anche su Android 12-14 (SDK extension 13).
+     */
+    static boolean searchSupported() {
+        if (Build.VERSION.SDK_INT >= 35) return true;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 13;
     }
 
     /** Richiesta di rendering. */
@@ -96,6 +117,13 @@ final class PdfEngine {
     private int scanNext = 1;
     private boolean thumbPending;
 
+    // Ricerca (stato condiviso, sotto lock)
+    private boolean searching;
+    private String searchQuery;
+    private int searchId;
+    private int searchStart;
+    private int searchPos;
+
     PdfEngine(Context context, Uri uri, File thumbFile, Listener listener) {
         this.context = context.getApplicationContext();
         this.uri = uri;
@@ -115,6 +143,24 @@ final class PdfEngine {
                 if (!j.key.equals(inFlight)) queue.add(j);
             }
             lock.notifyAll();
+        }
+    }
+
+    /** Avvia una ricerca (sostituisce quella in corso) partendo da {@code startPage} e tornando all'inizio. */
+    void search(String query, int startPage, int id) {
+        synchronized (lock) {
+            searching = true;
+            searchQuery = query;
+            searchId = id;
+            searchStart = Math.max(0, startPage);
+            searchPos = 0;
+            lock.notifyAll();
+        }
+    }
+
+    void cancelSearch() {
+        synchronized (lock) {
+            searching = false;
         }
     }
 
@@ -203,6 +249,7 @@ final class PdfEngine {
         while (true) {
             Job job = null;
             boolean doThumb = false;
+            boolean doSearch = false;
             synchronized (lock) {
                 while (!closed) {
                     job = queue.pollFirst();
@@ -213,6 +260,10 @@ final class PdfEngine {
                     if (thumbPending) {
                         thumbPending = false;
                         doThumb = true;
+                        break;
+                    }
+                    if (searching) {
+                        doSearch = true;
                         break;
                     }
                     if (scanNext < pageCount) break;
@@ -231,6 +282,8 @@ final class PdfEngine {
                 }
             } else if (doThumb) {
                 thumbnail();
+            } else if (doSearch) {
+                searchChunk();
             } else {
                 scanSizes();
             }
@@ -329,6 +382,69 @@ final class PdfEngine {
         main.post(() -> {
             if (!closed) listener.onPageSizes(s, w, h);
         });
+    }
+
+    /** Cerca per qualche decina di millisecondi poi torna al ciclo, così il disegno delle pagine ha la precedenza. */
+    private void searchChunk() {
+        final String query;
+        final int id, start;
+        int pos;
+        synchronized (lock) {
+            if (!searching) return;
+            query = searchQuery;
+            id = searchId;
+            start = searchStart;
+            pos = searchPos;
+        }
+        final long t0 = SystemClock.uptimeMillis();
+        while (pos < pageCount && SystemClock.uptimeMillis() - t0 < 30) {
+            final int page = (start + pos) % pageCount;
+            pos++;
+            try {
+                PdfRenderer.Page p = page(page);
+                final List<SearchHit> found = searchPage(p, query, page);
+                if (!found.isEmpty()) {
+                    final float pw = p.getWidth(), ph = p.getHeight();
+                    main.post(() -> {
+                        if (!closed) listener.onSearchHits(id, page, pw, ph, found);
+                    });
+                }
+            } catch (RuntimeException e) {
+                closeCurrent();   // pagina illeggibile: si passa alla successiva
+            }
+        }
+        synchronized (lock) {
+            if (!searching || searchId != id) return;   // sostituita o annullata nel frattempo
+            searchPos = pos;
+            if (pos >= pageCount) {
+                searching = false;
+                main.post(() -> {
+                    if (!closed) listener.onSearchDone(id);
+                });
+            }
+        }
+    }
+
+    private static List<SearchHit> searchPage(PdfRenderer.Page p, String query, int page) {
+        List<SearchHit> out = new ArrayList<>();
+        if (Build.VERSION.SDK_INT >= 35
+                || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 13)) {
+            for (PageMatchBounds m : p.searchText(query)) {
+                List<RectF> b = m.getBounds();
+                if (b.isEmpty()) continue;
+                float[] flat = new float[b.size() * 4];
+                for (int i = 0; i < b.size(); i++) {
+                    RectF r = b.get(i);
+                    flat[i * 4] = r.left;
+                    flat[i * 4 + 1] = r.top;
+                    flat[i * 4 + 2] = r.right;
+                    flat[i * 4 + 3] = r.bottom;
+                }
+                out.add(new SearchHit(page, flat));
+            }
+        }
+        return out;
     }
 
     private void thumbnail() {

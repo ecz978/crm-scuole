@@ -8,13 +8,14 @@ Usa il motore PDF di sistema (`PdfRenderer`): zero librerie, APK di poche centin
 - Scroll continuo, pinch-zoom, doppio tocco per zoomare, barra di scorrimento rapido con numero di pagina
 - Si apre da "Apri con" (file manager, browser, email) o dal pulsante dell'app
 - Recenti con miniatura e ripresa dall'ultima pagina letta
+- Ricerca nel testo con evidenziazione e navigazione tra i risultati (vedi limiti)
 - Vai a pagina, modalità notte (tenue, non un'inversione secca), condividi
 - Schermo sempre acceso durante la lettura, tocco per nascondere le barre
 - Tema chiaro/scuro di sistema, italiano e inglese
 
 ## Limiti
 
-- Niente ricerca nel testo né selezione: `PdfRenderer` non le offre prima di Android 15
+- La ricerca nel testo usa quella di sistema: serve Android 15 o un Android 12-14 con aggiornamenti recenti (SDK extension 13). Altrove l'app lo dice e il resto funziona. Non cerca nei PDF scansionati (niente testo) e non c'è selezione del testo
 - Niente PDF protetti da password (l'app lo segnala)
 - Non compila moduli e non mostra l'indice del documento
 

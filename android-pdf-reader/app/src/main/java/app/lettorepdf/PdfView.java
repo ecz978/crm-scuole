@@ -15,6 +15,7 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -114,6 +116,12 @@ public class PdfView extends View {
     private final Paint thumbPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint pillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint hitPaint = new Paint();
+    private final Paint currentHitPaint = new Paint();
+
+    // Risultati di ricerca da evidenziare, per pagina
+    private final SparseArray<ArrayList<SearchHit>> hitsByPage = new SparseArray<>();
+    private SearchHit currentHit;
     private final RectF rect = new RectF();
     private final RectF thumbRect = new RectF();
     private final RectF pillRect = new RectF();
@@ -138,6 +146,8 @@ public class PdfView extends View {
         cacheBudget = Math.max(64L, Math.min(160L, (long) (classMb * 0.4))) * 1024L * 1024L;
 
         pagePaint.setColor(Color.WHITE);
+        hitPaint.setColor(0x66FFC800);
+        currentHitPaint.setColor(0x99FF7A00);
         textPaint.setColor(Color.WHITE);
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14,
@@ -204,6 +214,46 @@ public class PdfView extends View {
 
     int pageCount() {
         return layout.count();
+    }
+
+    // ---------------------------------------------------------------- ricerca
+
+    void addHits(List<SearchHit> hits) {
+        for (SearchHit h : hits) {
+            ArrayList<SearchHit> l = hitsByPage.get(h.page);
+            if (l == null) {
+                l = new ArrayList<>();
+                hitsByPage.put(h.page, l);
+            }
+            l.add(h);
+        }
+        invalidate();
+    }
+
+    void clearHits() {
+        hitsByPage.clear();
+        currentHit = null;
+        invalidate();
+    }
+
+    /** Porta il risultato a circa un terzo dell'altezza dello schermo e lo evidenzia come corrente. */
+    void showHit(SearchHit hit) {
+        currentHit = hit;
+        if (hit == null || hit.rects.length < 4 || layout.width() <= 0
+                || hit.page >= layout.count()) {
+            invalidate();
+            return;
+        }
+        final int p = hit.page;
+        final float sx = viewW / layout.ptWidth(p);
+        final float sy = layout.height(p) / layout.ptHeight(p);
+        final float cx = (hit.rects[0] + hit.rects[2]) / 2f * sx;
+        final float cy = layout.top(p) + (hit.rects[1] + hit.rects[3]) / 2f * sy;
+        offY = cy * zoom - Math.max(insetTop + 64 * density, viewH * 0.35f);
+        if (zoom > 1f) offX = cx * zoom - viewW / 2f;
+        clampOffsets();
+        scrolled();
+        invalidate();
     }
 
     /** Allinea la pagina in alto (usato dopo "Vai a pagina", con le barre nascoste). */
@@ -474,6 +524,7 @@ public class PdfView extends View {
                 addJob(baseKey, viewW, Math.abs(pt + ph / 2f - cy));
             }
             if (tileLevel > 0 && z > 1.001f) drawTiles(c, i, left, pt, z, cy);
+            if (hitsByPage.size() > 0) drawHits(c, i, left, pt, pageW, ph);
         }
 
         // Pagine vicine: pronte prima che servano.
@@ -483,6 +534,21 @@ public class PdfView extends View {
         submit();
 
         drawIndicators(c);
+    }
+
+    private void drawHits(Canvas c, int page, float left, float pt, float pageW, float ph) {
+        ArrayList<SearchHit> list = hitsByPage.get(page);
+        if (list == null) return;
+        final float sx = pageW / layout.ptWidth(page);
+        final float sy = ph / layout.ptHeight(page);
+        final float pad = density;   // un filo di margine rende l'evidenziazione più leggibile
+        for (SearchHit h : list) {
+            Paint paint = h == currentHit ? currentHitPaint : hitPaint;
+            for (int k = 0; k + 3 < h.rects.length; k += 4) {
+                c.drawRect(left + h.rects[k] * sx - pad, pt + h.rects[k + 1] * sy - pad,
+                        left + h.rects[k + 2] * sx + pad, pt + h.rects[k + 3] * sy + pad, paint);
+            }
+        }
     }
 
     private void drawTiles(Canvas c, int page, float left, float pt, float z, float cy) {
