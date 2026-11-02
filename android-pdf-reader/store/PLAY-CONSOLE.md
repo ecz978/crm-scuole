@@ -58,7 +58,7 @@ Prima di usarlo ricordati di sostituire l'email di contatto.
 
 ## 7. Chiave di caricamento e segreti GitHub
 
-La CI firma il file di rilascio se in GitHub → Settings → Secrets and variables → Actions ci sono questi quattro segreti:
+La CI firma l'APK e produce il file `.aab` per Play (artifact `ecz-pdf-reader-aab`) se in GitHub → Settings → Secrets and variables → Actions ci sono questi quattro segreti:
 
 - `UPLOAD_KEYSTORE_B64`: il file della chiave codificato in base64
 - `UPLOAD_KEYSTORE_PASSWORD`

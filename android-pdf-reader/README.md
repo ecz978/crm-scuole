@@ -28,6 +28,16 @@ Per Play Store serve una chiave di rilascio vera.
 
 In locale (JDK 17 + Android SDK): `./gradlew assembleRelease`.
 
+## Avvisi di Android all'installazione
+
+Un APK installato fuori da uno store mostra sempre qualche avviso: nessuna impostazione della build lo elimina.
+
+- **"Installa app sconosciute":** è un permesso che si dà all'app da cui si apre il file (browser, gestore file). Serve per qualsiasi APK fuori da uno store.
+- **Avvisi di Play Protect ("app mai vista", "sviluppatore non verificato"):** dipendono dalla reputazione della firma e dello sviluppatore. Si riducono firmando sempre con la **stessa chiave vera** (non quella di debug, diversa a ogni build), scegliendo "Invia per la scansione" al primo avviso e, soprattutto, **installando da uno store** (Google Play, F-Droid, Galaxy Store), dove questi avvisi non compaiono.
+- **Verifica degli sviluppatori di Google:** introdotta dal 2026 per le app su dispositivi certificati, con un account gratuito limitato per hobbisti. Controlla lo stato nella console per sviluppatori Android.
+
+La firma con una chiave vera si attiva impostando quattro segreti in GitHub (vedi `store/PLAY-CONSOLE.md`, sezione 7): la CI firma allora sia l'APK sia il bundle per Play.
+
 ## Licenza
 
 Software libero, [GNU GPL v3 o successiva](LICENSE). Copyright (C) 2026 ecz978.
