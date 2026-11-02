@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PDF Reader</string>
+    <string name="app_name">ECZ PDF reader</string>
     <string name="recent">Recent</string>
     <string name="open_pdf">Open PDF</string>
     <string name="empty_title">No recent PDFs</string>

@@ -1,4 +1,4 @@
-# Lettore PDF
+# ECZ PDF reader
 
 App Android per leggere PDF. Nessuna pubblicità, nessun permesso, nessun accesso alla rete.
 Usa il motore PDF di sistema (`PdfRenderer`): zero librerie, APK di poche centinaia di KB.

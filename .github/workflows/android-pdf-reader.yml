@@ -66,9 +66,9 @@ jobs:
           else
             version="${GITHUB_REF_NAME#lettore-pdf-v}"
           fi
-          mv app-release.apk "LettorePDF-${version}.apk"
-          gh release create "lettore-pdf-v${version}" "LettorePDF-${version}.apk" \
+          mv app-release.apk "ECZ-PDF-reader-${version}.apk"
+          gh release create "lettore-pdf-v${version}" "ECZ-PDF-reader-${version}.apk" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "Lettore PDF ${version}" \
+            --title "ECZ PDF reader ${version}" \
             --notes "APK firmato con la chiave di debug (sideload). Per aggiornare una versione già installata, disinstallala prima."
