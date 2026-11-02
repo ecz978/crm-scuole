@@ -11,7 +11,12 @@ on:
     paths:
       - "android-pdf-reader/**"
       - ".github/workflows/android-pdf-reader.yml"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Versione da pubblicare come Release (es. 1.0). Vuoto = solo build."
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -39,9 +44,10 @@ jobs:
           path: android-pdf-reader/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
-  # Su tag lettore-pdf-vX.Y pubblica l'APK come Release (link diretto, senza zip).
+  # Pubblica l'APK come Release (link diretto, senza zip): su tag lettore-pdf-vX.Y
+  # oppure da "Run workflow" indicando la versione. Il tag viene creato se manca.
   release:
-    if: startsWith(github.ref, 'refs/tags/lettore-pdf-v')
+    if: startsWith(github.ref, 'refs/tags/lettore-pdf-v') || (github.event_name == 'workflow_dispatch' && inputs.release_version != '')
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -53,10 +59,16 @@ jobs:
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
+          INPUT_VERSION: ${{ inputs.release_version }}
         run: |
-          version="${GITHUB_REF_NAME#lettore-pdf-v}"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            version="$INPUT_VERSION"
+          else
+            version="${GITHUB_REF_NAME#lettore-pdf-v}"
+          fi
           mv app-release.apk "LettorePDF-${version}.apk"
-          gh release create "$GITHUB_REF_NAME" "LettorePDF-${version}.apk" \
+          gh release create "lettore-pdf-v${version}" "LettorePDF-${version}.apk" \
             --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
             --title "Lettore PDF ${version}" \
             --notes "APK firmato con la chiave di debug (sideload). Per aggiornare una versione già installata, disinstallala prima."
