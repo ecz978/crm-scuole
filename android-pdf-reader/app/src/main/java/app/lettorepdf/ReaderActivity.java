@@ -1,5 +1,6 @@
 package app.lettorepdf;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -326,13 +327,16 @@ public class ReaderActivity extends Activity implements PdfEngine.Listener, PdfV
         if (im != null) im.hideSoftInputFromWindow(searchInput.getWindowToken(), 0);
     }
 
+    // Il manifest rinuncia al "back predittivo" per questa attività (enableOnBackInvokedCallback=false),
+    // quindi onBackPressed viene chiamato anche su Android 16; lint non considera l'opt-out.
     @Override
+    @SuppressLint("GestureBackNavigation")
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
         if (searchMode) {
             closeSearch();
         } else {
-            super.onBackPressed();
+            finish();
         }
     }
 
