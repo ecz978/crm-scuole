@@ -1,5 +1,6 @@
 package app.lettorepdf;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -425,6 +426,9 @@ final class PdfEngine {
         }
     }
 
+    // searchText esiste da API 35 e con SDK extension 13 (Android 12-14 aggiornati): lint riconosce il
+    // controllo di versione solo per l'API, non per l'extension. Il controllo qui sotto copre entrambi i casi.
+    @SuppressLint("NewApi")
     private static List<SearchHit> searchPage(PdfRenderer.Page p, String query, int page) {
         List<SearchHit> out = new ArrayList<>();
         if (Build.VERSION.SDK_INT >= 35
