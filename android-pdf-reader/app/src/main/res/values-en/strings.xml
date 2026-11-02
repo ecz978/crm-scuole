@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ECZ PDF reader</string>
+    <string name="recent">Recent</string>
+    <string name="open_pdf">Open PDF</string>
+    <string name="empty_title">No recent PDFs</string>
+    <string name="empty_hint">Tap “Open PDF” to pick a file.</string>
+    <string name="remove_recent">Remove from recent</string>
+    <string name="page_of">Page %1$d of %2$d</string>
+    <string name="goto_page">Go to page</string>
+    <string name="goto_hint">1 to %1$d</string>
+    <string name="go">Go</string>
+    <string name="cancel">Cancel</string>
+    <string name="night_mode">Night mode</string>
+    <string name="day_mode">Day mode</string>
+    <string name="share">Share</string>
+    <string name="back">Back</string>
+    <string name="err_open">Can’t open this file.</string>
+    <string name="err_password">This PDF is password-protected, which the app doesn’t support.</string>
+    <string name="err_share">No app available to share with.</string>
+    <string name="just_now">Just now</string>
+    <string name="search">Search</string>
+    <string name="search_hint">Search in document</string>
+    <string name="search_count">%1$d / %2$d</string>
+    <string name="search_none">No results. Text in scanned PDFs can’t be searched.</string>
+    <string name="search_unsupported">Text search needs Android 15 or a recent system update: it isn’t available on this phone.</string>
+    <string name="close_search">Close search</string>
+    <string name="prev_hit">Previous result</string>
+    <string name="next_hit">Next result</string>
+</resources>

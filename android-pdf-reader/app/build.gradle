@@ -1,0 +1,66 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Chiave di firma "vera": la CI la fornisce tramite variabili d'ambiente (segreti di GitHub).
+// Senza chiave si firma con quella di debug, installabile ma senza reputazione e diversa a ogni build.
+def releaseKeystore = System.getenv('UPLOAD_KEYSTORE_FILE')
+
+android {
+    namespace 'app.lettorepdf'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'io.github.ecz978.pdfreader'
+        minSdk 26
+        targetSdk 36
+        versionCode 5
+        versionName '1.4'
+    }
+
+    signingConfigs {
+        if (releaseKeystore) {
+            release {
+                storeFile file(releaseKeystore)
+                storePassword System.getenv('UPLOAD_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('UPLOAD_KEY_ALIAS')
+                keyPassword System.getenv('UPLOAD_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig releaseKeystore ? signingConfigs.release : signingConfigs.debug
+            // Niente hash del commit nell'APK: build riproducibile.
+            vcsInfo.include = false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        buildConfig false
+    }
+
+    // F-Droid: niente blocchi di metadati firmati da Google nell'APK (privacy e build riproducibile).
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
+    lint {
+        abortOnError true
+        warningsAsErrors false
+    }
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}

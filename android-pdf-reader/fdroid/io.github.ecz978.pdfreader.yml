@@ -1,0 +1,28 @@
+# Bozza dei metadati per fdroiddata (https://gitlab.com/fdroid/fdroiddata).
+# Va copiata in metadata/io.github.ecz978.pdfreader.yml; i revisori possono chiedere aggiustamenti.
+
+Categories:
+  - Reading
+License: GPL-3.0-or-later
+AuthorName: ecz978
+SourceCode: https://github.com/ecz978/crm-scuole/tree/main/android-pdf-reader
+IssueTracker: https://github.com/ecz978/crm-scuole/issues
+
+AutoName: ECZ PDF reader
+
+RepoType: git
+Repo: https://github.com/ecz978/crm-scuole.git
+
+Builds:
+  - versionName: '1.4'
+    versionCode: 5
+    commit: lettore-pdf-v1.4
+    subdir: android-pdf-reader/app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^lettore-pdf-v
+UpdateCheckData: android-pdf-reader/app/build.gradle|versionCode\s(\d+)|.|versionName\s'([\d.]+)'
+CurrentVersion: '1.4'
+CurrentVersionCode: 5
