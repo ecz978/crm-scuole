@@ -724,7 +724,10 @@ public class PdfView extends View {
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float dx, float dy) {
             if (!scrolling) {
                 scrolling = true;
-                if (listener != null) listener.onScrollStarted();
+                // Il pinch (due dita) non è "leggere scorrendo": le barre devono restare dove sono.
+                if (listener != null && e2 != null && e2.getPointerCount() == 1 && !scaler.isInProgress()) {
+                    listener.onScrollStarted();
+                }
             }
             offX += dx;
             offY += dy;
