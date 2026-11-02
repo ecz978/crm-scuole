@@ -7,6 +7,7 @@ on:
       - ".github/workflows/android-pdf-reader.yml"
   push:
     branches: [main]
+    tags: ["lettore-pdf-v*"]
     paths:
       - "android-pdf-reader/**"
       - ".github/workflows/android-pdf-reader.yml"
@@ -37,3 +38,25 @@ jobs:
           name: lettore-pdf-apk
           path: android-pdf-reader/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+
+  # Su tag lettore-pdf-vX.Y pubblica l'APK come Release (link diretto, senza zip).
+  release:
+    if: startsWith(github.ref, 'refs/tags/lettore-pdf-v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: lettore-pdf-apk
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#lettore-pdf-v}"
+          mv app-release.apk "LettorePDF-${version}.apk"
+          gh release create "$GITHUB_REF_NAME" "LettorePDF-${version}.apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Lettore PDF ${version}" \
+            --notes "APK firmato con la chiave di debug (sideload). Per aggiornare una versione già installata, disinstallala prima."
